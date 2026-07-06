@@ -1,0 +1,155 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Quickflows ROI Calculator — light, Apple-grade theme.
+  Tokens follow FINAL BUILD_CONTEXT Section 4.1. White canvas, near-black ink,
+  violet as accent only. shadcn variable names are preserved so components
+  inherit them.
+*/
+
+:root {
+  --background: #ffffff; /* clean white canvas */
+  --foreground: #1a1a1f; /* near-black ink */
+
+  --card: #ffffff; /* white cards: hairline + soft shadow */
+  --card-foreground: #1a1a1f;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1f;
+
+  --primary: #6d28d9; /* brand violet, accessible on white */
+  --primary-foreground: #ffffff;
+
+  --secondary: #f5f5f7; /* Apple-style soft gray surface */
+  --secondary-foreground: #1a1a1f;
+  --muted: #f5f5f7;
+  --muted-foreground: #6e6e73; /* secondary text gray */
+  --accent: #f4f1fd; /* very light lavender, used sparingly */
+  --accent-foreground: #4c1d95;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --border: #e6e6eb; /* hairline borders */
+  --input: #e1e1e8; /* input border */
+  --ring: #7c3aed; /* focus ring */
+
+  --radius: 0.9rem;
+
+  /* brand + elevation extras (not shadcn) */
+  --brand-violet: #6d28d9;
+  --brand-violet-soft: #f4f1fd;
+  --brand-ink: #1a1a1f;
+  --shadow-sm: 0 1px 2px rgba(17, 17, 26, 0.04), 0 1px 3px rgba(17, 17, 26, 0.05);
+  --shadow-md: 0 6px 24px rgba(17, 17, 26, 0.06);
+  --shadow-lg: 0 16px 48px rgba(17, 17, 26, 0.08);
+
+  /* charts / sidebar kept for shadcn compatibility (unused) */
+  --chart-1: #6d28d9;
+  --chart-2: #7c3aed;
+  --chart-3: #8b5cf6;
+  --chart-4: #a78bfa;
+  --chart-5: #c4b5fd;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1a1f;
+  --sidebar-primary: #6d28d9;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f4f1fd;
+  --sidebar-accent-foreground: #4c1d95;
+  --sidebar-border: #e6e6eb;
+  --sidebar-ring: #7c3aed;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-brand: var(--brand-violet);
+  --color-brand-soft: var(--brand-violet-soft);
+  --color-brand-ink: var(--brand-ink);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-led: var(--font-doto);
+
+  --shadow-soft-sm: var(--shadow-sm);
+  --shadow-soft-md: var(--shadow-md);
+  --shadow-soft-lg: var(--shadow-lg);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body {
+    background: var(--background);
+    color: var(--foreground);
+  }
+  body {
+    @apply font-sans antialiased;
+    font-variant-numeric: tabular-nums;
+    /* Subtle background grid — texture, not decoration. Kept very faint so
+       white cards read as paper resting on it. */
+    background-image:
+      linear-gradient(to right, rgba(26, 26, 31, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(26, 26, 31, 0.035) 1px, transparent 1px);
+    background-size: 46px 46px;
+    background-position: center top;
+    background-attachment: fixed;
+  }
+}
+
+/* Every displayed figure aligns as it animates. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
