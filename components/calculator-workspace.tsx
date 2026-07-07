@@ -11,6 +11,7 @@ import { AssumptionsPanel } from "@/components/assumptions-panel";
 import { BreakdownSheet } from "@/components/breakdown-sheet";
 import { EligibilityComparison } from "@/components/eligibility-comparison";
 import { RcmProviderComparison } from "@/components/rcm-provider-comparison";
+import { ProviderCredComparison } from "@/components/providercred-comparison";
 import { useRoi } from "@/components/roi-provider";
 import { fieldsByTier } from "@/lib/roi-config";
 
@@ -76,6 +77,8 @@ export function CalculatorWorkspace() {
             >
               {activeProduct.id === "rcm-provider" ? (
                 <RcmProviderComparison product={activeProduct} />
+              ) : activeProduct.id === "providercred" ? (
+                <ProviderCredComparison product={activeProduct} />
               ) : (
                 <EligibilityComparison product={activeProduct} />
               )}

@@ -187,6 +187,31 @@ const RCM_PROVIDER_SOURCES: Record<string, { label: string; source: string }> = 
   rcmDenialReduction: RCM_PROVIDER_AGENT.denialReduction,
 };
 
+// --- ProviderCred (Credentialing) constants (see ROI_ProviderCred_Modification.md) ---
+// Labor saved only in the total. Faster billing and risk are shown as separate
+// labeled lines, never added. Everything is from the poster — no external benchmarks.
+
+// Quickflows agent performance — LOCKED, from the ProviderCred poster. Never editable.
+export const PROVIDERCRED_AGENT = {
+  verificationTimeReduction: { value: 0.70,    label: "Reduction in manual provider verification time", source: "Quickflows (poster: 70% faster onboarding)" },
+  onboardingSpeedup:         { value: 0.70,    label: "Faster onboarding (same 70% figure)",            source: "Quickflows (poster: 70% faster onboarding)" },
+  riskAvoidedPerYear:        { value: 2000000, label: "Average compliance exposure eliminated per year", source: "Quickflows (poster: $2M+ risk avoided)" },
+  // Reinforcing facts — DISPLAY ONLY. Never monetized, never in the total.
+  lessManualWork:      { value: 0.85, label: "Less spreadsheet-based credentialing work",             source: "Quickflows (poster: 85% less manual work)",     displayOnly: true },
+  complianceExposure:  { value: 0.80, label: "Less undetected compliance exposure",                   source: "Quickflows (poster: 80% compliance exposure)",  displayOnly: true },
+  recredentialingTime: { value: 0.90, label: "Faster recredentialing cycles",                         source: "Quickflows (poster: 90% recredentialing time)", displayOnly: true },
+  alertPrecision:      { value: 0.92, label: "Improvement in match accuracy vs name-only screening",  source: "Quickflows (poster: 92% alert precision)",      displayOnly: true },
+  auditReady:          { value: 1.00, label: "Audit-ready reporting on demand",                       source: "Quickflows (poster: 100% audit-ready)",         displayOnly: true },
+  rosterCapacity:      { value: 0.75, label: "More providers credentialed with the same team",        source: "Quickflows (poster: 75% roster capacity)",      displayOnly: true },
+} as const;
+
+// ProviderCred source keys namespaced ("pc…") to future-proof against collisions.
+const PROVIDERCRED_SOURCES: Record<string, { label: string; source: string }> = {
+  pcVerificationTimeReduction: PROVIDERCRED_AGENT.verificationTimeReduction,
+  pcOnboardingSpeedup:         PROVIDERCRED_AGENT.onboardingSpeedup,
+  pcRiskAvoidedPerYear:        PROVIDERCRED_AGENT.riskAvoidedPerYear,
+};
+
 /**
  * Resolve any sourced key to its { label, source } for tooltips and the Sources
  * view. Spans the shared BENCHMARKS plus the eligibility and RCM constant maps
@@ -211,6 +236,10 @@ export function getSource(key: string): { label: string; source: string } | null
   }
   if (key in RCM_PROVIDER_SOURCES) {
     const b = RCM_PROVIDER_SOURCES[key];
+    return { label: b.label, source: b.source };
+  }
+  if (key in PROVIDERCRED_SOURCES) {
+    const b = PROVIDERCRED_SOURCES[key];
     return { label: b.label, source: b.source };
   }
   return null;
@@ -261,6 +290,11 @@ export interface ComparisonResult {
     annualRevenue: number;
     denialsPerYear: number;
     denialCostShareOfRevenue: number;
+  };
+  /** Optional separate figures shown below the total but never added to it. */
+  separate?: {
+    cashFreed: number;
+    riskAvoided: number;
   };
 }
 
@@ -612,98 +646,55 @@ export const PRODUCTS: Product[] = [
     id: "providercred",
     name: "ProviderCred (Credentialing)",
     segments: ["provider", "homeHealth"],
-    blurb:
-      "Verifies and monitors every provider automatically, so billing starts sooner and fines are avoided.",
+    blurb: "See what manual credentialing costs your team each year, and what the agent saves.",
+    outputMode: "comparison",
+    period: "annual",
+
+    // ONLY editable inputs = the client's reality (no poster figures here).
     fields: [
-      {
-        key: "providersPerYear",
-        label: "Providers credentialed per year",
-        type: "number",
-        tier: "core",
-        default: 500,
-        min: 10,
-        step: 10,
-        unit: "providers/yr",
-      },
-      {
-        key: "newBillingProviders",
-        label: "New billing providers per year",
-        type: "number",
-        tier: "core",
-        default: 100,
-        min: 0,
-        step: 5,
-        unit: "providers",
-      },
-      {
-        key: "billingPerDay",
-        label: "Revenue a provider bills per day",
-        type: "currency",
-        tier: "core",
-        default: 2000,
-        min: 100,
-        step: 100,
-        unit: "$/day",
-      },
-      {
-        key: "hoursSavedPerCheck",
-        label: "Hours saved per check",
-        type: "number",
-        tier: "advanced",
-        default: 4,
-        min: 1,
-        max: 20,
-        step: 1,
-        unit: "hrs",
-      },
-      {
-        key: "staffHourly",
-        label: "Staff hourly cost",
-        type: "currency",
-        tier: "advanced",
-        default: 35,
-        min: 15,
-        step: 5,
-        unit: "$/hr",
-      },
-      {
-        key: "daysOnboardingSaved",
-        label: "Days billing starts sooner",
-        type: "number",
-        tier: "advanced",
-        default: 20,
-        min: 1,
-        max: 90,
-        step: 1,
-        unit: "days",
-      },
+      // Credentialing labor — drives the headline total
+      { key: "providersPerYear",    label: "Providers credentialed per year",       type: "number",   tier: "core", default: 500,  min: 10,  step: 10,  unit: "providers/yr" },
+      { key: "manualHours",         label: "Hours to verify one provider manually",  type: "number",   tier: "core", default: 6,    min: 0.5, max: 40, step: 0.5, unit: "hrs",   hint: "Your team's real number. Placeholder, not a poster figure." },
+      { key: "staffHourly",         label: "Credentialing staff cost per hour",      type: "currency", tier: "core", default: 35,   min: 15,  step: 1,   unit: "$/hr" },
+      // Onboarding speed — feeds the separate faster-billing line only, NOT the total
+      { key: "newBillingProviders", label: "New billing providers per year",          type: "number",   tier: "core", default: 100,  min: 0,   step: 5,   unit: "providers" },
+      { key: "onboardingDays",      label: "Days to onboard a new provider today",   type: "number",   tier: "core", default: 30,   min: 1,   max: 180, step: 1,   unit: "days",  hint: "Your team's real number. Placeholder, not a poster figure." },
+      { key: "billingPerDay",       label: "Revenue a provider bills per day",        type: "currency", tier: "core", default: 2000, min: 100, step: 100, unit: "$/day" },
     ],
+
     compute: (v) => {
-      const timeSaved = v.providersPerYear * v.hoursSavedPerCheck * v.staffHourly;
-      const cashFreed =
-        v.newBillingProviders * v.daysOnboardingSaved * v.billingPerDay;
+      const A = PROVIDERCRED_AGENT;
+      const manualLabor = v.providersPerYear * v.manualHours * v.staffHourly;
+      const laborSaved  = manualLabor * A.verificationTimeReduction.value;
+      const daysSooner  = v.onboardingDays * A.onboardingSpeedup.value;
+      const cashFreed   = v.newBillingProviders * daysSooner * v.billingPerDay;
+      const riskAvoided = A.riskAvoidedPerYear.value;
       return [
-        {
-          category: "timeSaved",
-          label: "Verification time saved",
-          amount: timeSaved,
-          sourceKeys: [],
-        },
-        {
-          category: "cashFreed",
-          label: "Revenue captured earlier",
-          amount: cashFreed,
-          sourceKeys: [],
-          note: "Timing; new billing providers only",
-        },
-        {
-          category: "riskAvoided",
-          label: "Exclusion-fine exposure avoided",
-          amount: b.exclusionFine.value,
-          sourceKeys: ["exclusionFine"],
-          note: "Reference figure, not summed",
-        },
+        { category: "timeSaved",   label: "Credentialing labor saved (annual)",  amount: laborSaved,  sourceKeys: ["pcVerificationTimeReduction"] },
+        { category: "cashFreed",   label: "Revenue captured earlier (annual)",    amount: cashFreed,   sourceKeys: ["pcOnboardingSpeedup"],        note: "Timing, not new money. Separate line." },
+        { category: "riskAvoided", label: "Compliance exposure avoided (annual)", amount: riskAvoided, sourceKeys: ["pcRiskAvoidedPerYear"],        note: "Poster average. Separate line, never in the total." },
       ];
+    },
+
+    comparison: (v) => {
+      const A = PROVIDERCRED_AGENT;
+      const manualLabor = v.providersPerYear * v.manualHours * v.staffHourly;
+      const autoLabor   = manualLabor * (1 - A.verificationTimeReduction.value);
+      const daysSooner  = v.onboardingDays * A.onboardingSpeedup.value;
+      const cashFreed   = v.newBillingProviders * daysSooner * v.billingPerDay;
+      return {
+        period: "annual",
+        rows: [
+          { label: "Credentialing verification labor", manual: manualLabor, automated: autoLabor, saved: manualLabor - autoLabor },
+        ],
+        totalManual:     manualLabor,
+        totalAutomated:  autoLabor,
+        totalSaved:      manualLabor - autoLabor,
+        separate: {
+          cashFreed,
+          riskAvoided: A.riskAvoidedPerYear.value,
+        },
+      };
     },
   },
 
