@@ -64,6 +64,91 @@ export const BENCHMARKS = {
 
 export type BenchmarkKey = keyof typeof BENCHMARKS;
 
+// --- AI Eligibility Verification constants (see ROI_Eligibility_Modification.md) ---
+// Eligibility is a pre-care service, not claims/RCM. Its ROI is the manual
+// verification labor it removes plus the eligibility-error write-offs it prevents.
+
+// Quickflows agent performance — LOCKED, from the Eligibility poster. Never editable.
+export const ELIGIBILITY_AGENT = {
+  manualEffortRemoved: {
+    value: 0.65,
+    label: "Manual verification effort removed",
+    source: "Quickflows (poster: front-desk productivity)",
+  },
+  denialReduction: {
+    value: 0.45,
+    label: "Reduction in coverage/network denials",
+    source: "Quickflows (poster: fewer denials)",
+  },
+  secondsPerCheck: {
+    value: 10,
+    label: "Automated verification time",
+    source: "Quickflows (poster: under 10s to confidence)",
+  },
+} as const;
+
+// Industry constants — LOCKED, sourced. Shown with citations, not edited in the main flow.
+export const ELIGIBILITY_INDUSTRY = {
+  initialDenialRate: {
+    value: 0.118,
+    label: "Initial claim denial rate",
+    source: "Experian State of Claims 2025 / Kodiak 2024",
+  },
+  eligibilityShare: {
+    value: 0.24,
+    label: "Share of denials caused by eligibility/registration errors",
+    source: "MGMA 2024",
+  },
+  neverRecovered: {
+    value: 0.65,
+    label: "Denied claims never recovered",
+    source: "MGMA",
+  },
+} as const;
+
+// Sourced defaults for the client-editable inputs.
+export const ELIGIBILITY_DEFAULTS = {
+  manualMinutes: {
+    value: 12.64,
+    label: "Minutes per manual verification",
+    source: "MGMA analysis (avg minutes per manual verification)",
+  },
+  staffHourly: {
+    value: 21,
+    label: "Verification staff cost per hour",
+    source:
+      "PayScale / Salary.com / ZipRecruiter 2025-2026 (front-desk ~$18-21, verification specialist ~$20-24)",
+  },
+} as const;
+
+/**
+ * Resolve any sourced key to its { label, source } for tooltips and the Sources
+ * view. Spans the shared BENCHMARKS plus the eligibility constant/default maps
+ * so a field's `sourceKey` may point at either. Returns null for unknown keys.
+ */
+export function getSource(key: string): { label: string; source: string } | null {
+  if (key in BENCHMARKS) {
+    const b = BENCHMARKS[key as BenchmarkKey];
+    return { label: b.label, source: b.source };
+  }
+  if (key in ELIGIBILITY_AGENT) {
+    const b = ELIGIBILITY_AGENT[key as keyof typeof ELIGIBILITY_AGENT];
+    return { label: b.label, source: b.source };
+  }
+  if (key in ELIGIBILITY_INDUSTRY) {
+    const b = ELIGIBILITY_INDUSTRY[key as keyof typeof ELIGIBILITY_INDUSTRY];
+    return { label: b.label, source: b.source };
+  }
+  if (key in ELIGIBILITY_DEFAULTS) {
+    const b = ELIGIBILITY_DEFAULTS[key as keyof typeof ELIGIBILITY_DEFAULTS];
+    return { label: b.label, source: b.source };
+  }
+  return null;
+}
+
+// A sourced key may reference BENCHMARKS or any eligibility constant/default map.
+export type SourceKey = string;
+
 export type FieldType = "number" | "currency" | "percent" | "slider";
 export type Tier = "core" | "advanced";
 
@@ -79,12 +164,28 @@ export interface Field {
   unit?: string; // e.g. "claims/yr", "$"
   hint?: string; // small helper text
   attribution?: boolean; // "how much we fix" control; tag as assumption
-  sourceKey?: BenchmarkKey; // show source when default comes from a benchmark
+  sourceKey?: SourceKey; // show source when default comes from a benchmark/default
 }
 
 export interface DisabledLine {
   label: string;
   reason: string; // shown in a disabled placeholder row
+}
+
+/** One row of a manual-vs-automated comparison (see `outputMode: "comparison"`). */
+export interface ComparisonRow {
+  label: string;
+  manual: number;
+  automated: number;
+  saved: number;
+}
+
+export interface ComparisonResult {
+  period: "monthly";
+  rows: ComparisonRow[];
+  totalManual: number;
+  totalAutomated: number;
+  totalSaved: number;
 }
 
 export interface Product {
@@ -95,6 +196,12 @@ export interface Product {
   fields: Field[];
   compute: (v: Record<string, number>) => LineItem[];
   disabledLines?: DisabledLine[];
+  /** How the product's module renders. Defaults to "single". */
+  outputMode?: "single" | "comparison";
+  /** Reporting period for this product's figures. Defaults to "annual". */
+  period?: "monthly" | "annual";
+  /** Manual-vs-automated figures, for `outputMode: "comparison"`. */
+  comparison?: (v: Record<string, number>) => ComparisonResult;
 }
 
 const b = BENCHMARKS;
@@ -105,70 +212,124 @@ export const PRODUCTS: Product[] = [
     name: "AI Eligibility Verification",
     segments: ["provider", "homeHealth"],
     blurb:
-      "Confirms coverage before care, so claims are not denied for eligibility errors later.",
+      "See what manual insurance verification costs you each month, and what the agent saves.",
+    outputMode: "comparison", // render the manual-vs-automated table (Section 4)
+    period: "monthly", // this agent is monthly; others remain annual
+    // ONLY editable inputs = the client's manual reality.
     fields: [
       {
-        key: "annualClaims",
-        label: "Claims per year",
+        key: "appointmentsPerMonth",
+        label: "Scheduled appointments per month",
         type: "number",
         tier: "core",
-        default: 100000,
-        min: 1000,
-        step: 1000,
-        unit: "claims/yr",
+        default: 2000,
+        min: 50,
+        step: 50,
+        unit: "visits/mo",
+      },
+      {
+        key: "manualMinutes",
+        label: "Minutes to verify one patient manually",
+        type: "number",
+        tier: "core",
+        default: 12.64,
+        min: 1,
+        max: 60,
+        step: 0.5,
+        unit: "min",
+        sourceKey: "manualMinutes",
+        hint: "Includes coverage, in/out-of-network, benefits, and auth checks",
+      },
+      {
+        key: "staffHourly",
+        label: "Verification staff cost per hour",
+        type: "currency",
+        tier: "core",
+        default: 21,
+        min: 12,
+        step: 1,
+        unit: "$/hr",
+        sourceKey: "staffHourly",
+        hint: "Front-desk staffer or verification specialist; use a loaded rate if you have one",
       },
       {
         key: "avgReimbursement",
-        label: "Average payment per claim",
+        label: "Your average payment per visit",
         type: "currency",
         tier: "core",
-        default: 200,
-        min: 10,
+        default: 150,
+        min: 20,
         step: 10,
         unit: "$",
-      },
-      {
-        key: "coverageDenialRate",
-        label: "Coverage-related denial rate",
-        type: "percent",
-        tier: "advanced",
-        default: 0.03,
-        min: 0.01,
-        max: 0.1,
-        step: 0.005,
-        hint: "Portion of claims denied for coverage",
-      },
-      {
-        key: "denialReduction",
-        label: "How much we reduce these denials",
-        type: "slider",
-        tier: "advanced",
-        default: 0.4,
-        min: 0.1,
-        max: 0.45,
-        step: 0.05,
-        attribution: true,
+        hint: "Your own average; used for the money-lost line",
       },
     ],
+    // For the aggregate value-category system. Both lines are hard-dollar, monthly.
     compute: (v) => {
-      const denials = v.annualClaims * v.coverageDenialRate;
-      const reduced = denials * v.denialReduction;
-      const recovered = reduced * b.neverReworked.value * v.avgReimbursement;
-      const timeSaved = reduced * (1 - b.neverReworked.value) * b.reworkCost.value;
+      const A = ELIGIBILITY_AGENT,
+        I = ELIGIBILITY_INDUSTRY;
+      const manualLaborCost =
+        ((v.appointmentsPerMonth * v.manualMinutes) / 60) * v.staffHourly;
+      const laborSaved = manualLaborCost * A.manualEffortRemoved.value;
+
+      const eligDenials =
+        v.appointmentsPerMonth * I.initialDenialRate.value * I.eligibilityShare.value;
+      const revenueLost = eligDenials * I.neverRecovered.value * v.avgReimbursement;
+      const revenueProtected = revenueLost * A.denialReduction.value;
+
       return [
         {
-          category: "moneyRecovered",
-          label: "Denials recovered",
-          amount: recovered,
-          sourceKeys: ["neverReworked", "initialDenialRate"],
+          category: "timeSaved",
+          label: "Verification labor saved (monthly)",
+          amount: laborSaved,
+          sourceKeys: ["manualEffortRemoved"],
         },
         {
-          category: "timeSaved",
-          label: "Rework time saved",
-          amount: timeSaved,
-          sourceKeys: ["reworkCost"],
+          category: "moneyRecovered",
+          label: "Eligibility write-offs avoided (monthly)",
+          amount: revenueProtected,
+          sourceKeys: [
+            "initialDenialRate",
+            "eligibilityShare",
+            "neverRecovered",
+            "denialReduction",
+          ],
         },
       ];
+    },
+    // Powers the side-by-side comparison view. Same math, manual vs automated.
+    comparison: (v) => {
+      const A = ELIGIBILITY_AGENT,
+        I = ELIGIBILITY_INDUSTRY;
+      const manualLabor =
+        ((v.appointmentsPerMonth * v.manualMinutes) / 60) * v.staffHourly;
+      const autoLabor = manualLabor * (1 - A.manualEffortRemoved.value);
+
+      const eligDenials =
+        v.appointmentsPerMonth * I.initialDenialRate.value * I.eligibilityShare.value;
+      const revLostManual = eligDenials * I.neverRecovered.value * v.avgReimbursement;
+      const revLostAuto = revLostManual * (1 - A.denialReduction.value);
+
+      return {
+        period: "monthly",
+        rows: [
+          {
+            label: "Verification labor",
+            manual: manualLabor,
+            automated: autoLabor,
+            saved: manualLabor - autoLabor,
+          },
+          {
+            label: "Revenue lost to eligibility errors",
+            manual: revLostManual,
+            automated: revLostAuto,
+            saved: revLostManual - revLostAuto,
+          },
+        ],
+        totalManual: manualLabor + revLostManual,
+        totalAutomated: autoLabor + revLostAuto,
+        totalSaved: manualLabor - autoLabor + (revLostManual - revLostAuto),
+      };
     },
   },
 

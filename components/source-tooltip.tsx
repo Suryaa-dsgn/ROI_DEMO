@@ -6,24 +6,29 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { BENCHMARKS, type BenchmarkKey } from "@/lib/roi-config";
+import { getSource } from "@/lib/roi-config";
 
 /**
  * Small info affordance that reveals the benchmark label + source on hover
  * AND focus (keyboard/touch reachable). This citation is the differentiator:
- * a generic calculator invents numbers; ours cites them.
+ * a generic calculator invents numbers; ours cites them. Keys resolve across
+ * the shared BENCHMARKS and the eligibility constant/default maps.
  */
 export function SourceTooltip({
   sourceKeys,
   label = "Show source",
   className,
 }: {
-  sourceKeys: BenchmarkKey[];
+  sourceKeys: string[];
   label?: string;
   className?: string;
 }) {
-  const keys = sourceKeys.filter((k) => k in BENCHMARKS);
-  if (keys.length === 0) return null;
+  const resolved = sourceKeys
+    .map((k) => ({ key: k, source: getSource(k) }))
+    .filter((r): r is { key: string; source: { label: string; source: string } } =>
+      r.source !== null,
+    );
+  if (resolved.length === 0) return null;
 
   return (
     <Tooltip>
@@ -35,18 +40,12 @@ export function SourceTooltip({
       </TooltipTrigger>
       <TooltipContent className="max-w-xs border-border bg-popover text-popover-foreground">
         <ul className="space-y-1.5">
-          {keys.map((k) => {
-            const bench = BENCHMARKS[k];
-            return (
-              <li key={k} className="text-xs leading-snug">
-                <span className="text-foreground">{bench.label}</span>
-                <span className="text-muted-foreground">
-                  {" "}
-                  — {bench.source}
-                </span>
-              </li>
-            );
-          })}
+          {resolved.map(({ key, source }) => (
+            <li key={key} className="text-xs leading-snug">
+              <span className="text-foreground">{source.label}</span>
+              <span className="text-muted-foreground"> — {source.source}</span>
+            </li>
+          ))}
         </ul>
       </TooltipContent>
     </Tooltip>

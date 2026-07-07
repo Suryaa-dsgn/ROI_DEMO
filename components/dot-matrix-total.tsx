@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import { useCountUp } from "@/hooks/use-count-up";
 import { formatCurrency } from "@/lib/format";
@@ -29,21 +29,18 @@ export function DotMatrixTotal({
       : "text-4xl sm:text-5xl";
   const toneClass = tone === "violet" ? "text-primary" : "text-brand-ink";
 
-  // Typewriter reveal of the value present at mount.
-  const initial = useRef(formatCurrency(value));
-  const target = initial.current;
+  // Typewriter reveal of the value present at mount. Captured once in lazy
+  // state so it stays render-safe (no ref reads during render).
+  const [target] = useState(() => formatCurrency(value));
   const [typedCount, setTypedCount] = useState(reduce ? target.length : 0);
-  const [typing, setTyping] = useState(!reduce);
+  // Derived, not stored: we're still typing until every character is revealed.
+  const typing = !reduce && typedCount < target.length;
 
   useEffect(() => {
-    if (reduce) return;
-    if (typedCount >= target.length) {
-      setTyping(false);
-      return;
-    }
+    if (!typing) return;
     const t = setTimeout(() => setTypedCount((n) => n + 1), 60);
     return () => clearTimeout(t);
-  }, [typedCount, target.length, reduce]);
+  }, [typing, typedCount]);
 
   // After the reveal, live input changes count up smoothly.
   const liveDisplay = useCountUp(value);

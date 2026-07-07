@@ -1,15 +1,26 @@
 "use client";
 
-import { BENCHMARKS } from "@/lib/roi-config";
-import { formatCurrency, formatPercent } from "@/lib/format";
+import {
+  BENCHMARKS,
+  ELIGIBILITY_AGENT,
+  ELIGIBILITY_INDUSTRY,
+  ELIGIBILITY_DEFAULTS,
+} from "@/lib/roi-config";
+import { formatCurrency, formatNumber, formatPercent } from "@/lib/format";
 
 function displayValue(value: number): string {
   if (value > 0 && value < 1) return formatPercent(value);
+  if (value < 100) return formatNumber(value); // small counts/minutes, e.g. 10s, 12.64 min
   return formatCurrency(value);
 }
 
 export function ViewSources() {
-  const entries = Object.entries(BENCHMARKS);
+  const entries = [
+    ...Object.entries(BENCHMARKS),
+    ...Object.entries(ELIGIBILITY_INDUSTRY),
+    ...Object.entries(ELIGIBILITY_AGENT),
+    ...Object.entries(ELIGIBILITY_DEFAULTS),
+  ];
 
   return (
     <div className="mx-auto max-w-3xl py-4">
@@ -24,7 +35,7 @@ export function ViewSources() {
       <ul className="mt-10 overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-sm)]">
         {entries.map(([key, b], i) => (
           <li
-            key={key}
+            key={`${key}-${i}`}
             className={`flex items-start justify-between gap-4 px-5 py-4 ${i > 0 ? "border-t border-border" : ""}`}
           >
             <div className="min-w-0">
