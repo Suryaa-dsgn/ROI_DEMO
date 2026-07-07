@@ -10,6 +10,7 @@ import { RunningTotal } from "@/components/running-total";
 import { AssumptionsPanel } from "@/components/assumptions-panel";
 import { BreakdownSheet } from "@/components/breakdown-sheet";
 import { EligibilityComparison } from "@/components/eligibility-comparison";
+import { RcmProviderComparison } from "@/components/rcm-provider-comparison";
 import { useRoi } from "@/components/roi-provider";
 import { fieldsByTier } from "@/lib/roi-config";
 
@@ -73,7 +74,11 @@ export function CalculatorWorkspace() {
               exit={reduce ? undefined : { opacity: 0, y: -8 }}
               transition={{ duration: 0.3, ease: EASE }}
             >
-              <EligibilityComparison product={activeProduct} />
+              {activeProduct.id === "rcm-provider" ? (
+                <RcmProviderComparison product={activeProduct} />
+              ) : (
+                <EligibilityComparison product={activeProduct} />
+              )}
             </motion.div>
           </AnimatePresence>
         </div>

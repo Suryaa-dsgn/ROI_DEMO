@@ -5,6 +5,8 @@ import {
   ELIGIBILITY_AGENT,
   ELIGIBILITY_INDUSTRY,
   ELIGIBILITY_DEFAULTS,
+  RCM_PROVIDER_INDUSTRY,
+  RCM_PROVIDER_AGENT,
 } from "@/lib/roi-config";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/format";
 
@@ -20,6 +22,8 @@ export function ViewSources() {
     ...Object.entries(ELIGIBILITY_INDUSTRY),
     ...Object.entries(ELIGIBILITY_AGENT),
     ...Object.entries(ELIGIBILITY_DEFAULTS),
+    ...Object.entries(RCM_PROVIDER_INDUSTRY),
+    ...Object.entries(RCM_PROVIDER_AGENT),
   ];
 
   return (

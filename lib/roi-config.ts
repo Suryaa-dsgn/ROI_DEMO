@@ -121,10 +121,76 @@ export const ELIGIBILITY_DEFAULTS = {
   },
 } as const;
 
+// --- RCM — Provider constants (see ROI_RCM_Provider_Modification.md) ---
+// Denials only: rework labor + write-offs. Other poster figures are reinforcing
+// facts (displayOnly) and never added to the total, to stay defensible.
+
+// Quickflows agent performance — LOCKED, from the RCM Provider poster. Never editable.
+export const RCM_PROVIDER_AGENT = {
+  denialReduction: {
+    value: 0.35,
+    label: "Fewer denials with pre-submission AI review",
+    source: "Quickflows (poster: 35% fewer denials)",
+  },
+  // Reinforcing facts — DISPLAY ONLY. Shown as capability facts, never summed.
+  fasterAppeals: {
+    value: 3,
+    label: "Faster appeals vs manual preparation",
+    source: "Quickflows (poster: 3x faster appeals)",
+    displayOnly: true,
+  },
+  moreRevenue: {
+    value: 0.28,
+    label: "Improvement in net collection rate per provider",
+    source: "Quickflows (poster: 28% more revenue)",
+    displayOnly: true,
+  },
+  arRecovery: {
+    value: 0.31,
+    label: "Improvement in outstanding balance collection",
+    source: "Quickflows (poster: 31% AR recovery)",
+    displayOnly: true,
+  },
+  cleanClaimRate: {
+    value: 0.8,
+    label: "Clean claim rate on first submission",
+    source: "Quickflows (poster: 80% clean claim rate)",
+    displayOnly: true,
+  },
+} as const;
+
+// Industry constants — LOCKED, sourced. Used in the math, shown with citations.
+export const RCM_PROVIDER_INDUSTRY = {
+  denialRate: {
+    value: 0.118,
+    label: "Initial claim denial rate",
+    source: "Experian State of Claims 2025 / Kodiak 2024",
+  },
+  reworkCost: {
+    value: 50,
+    label: "Cost to rework one denied claim (midpoint of $25-$118)",
+    source: "MGMA / Change Healthcare",
+  },
+  neverRecovered: {
+    value: 0.65,
+    label: "Denied claims never recovered",
+    source: "MGMA",
+  },
+} as const;
+
+// RCM source keys are namespaced ("rcm…") so they never collide with the
+// eligibility maps (which also define denialReduction / neverRecovered).
+const RCM_PROVIDER_SOURCES: Record<string, { label: string; source: string }> = {
+  rcmDenialRate: RCM_PROVIDER_INDUSTRY.denialRate,
+  rcmReworkCost: RCM_PROVIDER_INDUSTRY.reworkCost,
+  rcmNeverRecovered: RCM_PROVIDER_INDUSTRY.neverRecovered,
+  rcmDenialReduction: RCM_PROVIDER_AGENT.denialReduction,
+};
+
 /**
  * Resolve any sourced key to its { label, source } for tooltips and the Sources
- * view. Spans the shared BENCHMARKS plus the eligibility constant/default maps
- * so a field's `sourceKey` may point at either. Returns null for unknown keys.
+ * view. Spans the shared BENCHMARKS plus the eligibility and RCM constant maps
+ * so a field's `sourceKey` may point at any of them. Returns null for unknown keys.
  */
 export function getSource(key: string): { label: string; source: string } | null {
   if (key in BENCHMARKS) {
@@ -141,6 +207,10 @@ export function getSource(key: string): { label: string; source: string } | null
   }
   if (key in ELIGIBILITY_DEFAULTS) {
     const b = ELIGIBILITY_DEFAULTS[key as keyof typeof ELIGIBILITY_DEFAULTS];
+    return { label: b.label, source: b.source };
+  }
+  if (key in RCM_PROVIDER_SOURCES) {
+    const b = RCM_PROVIDER_SOURCES[key];
     return { label: b.label, source: b.source };
   }
   return null;
@@ -181,11 +251,17 @@ export interface ComparisonRow {
 }
 
 export interface ComparisonResult {
-  period: "monthly";
+  period: "monthly" | "annual";
   rows: ComparisonRow[];
   totalManual: number;
   totalAutomated: number;
   totalSaved: number;
+  /** Optional read-only context stats (e.g. derived revenue, denial share). */
+  context?: {
+    annualRevenue: number;
+    denialsPerYear: number;
+    denialCostShareOfRevenue: number;
+  };
 }
 
 export interface Product {
@@ -202,6 +278,8 @@ export interface Product {
   period?: "monthly" | "annual";
   /** Manual-vs-automated figures, for `outputMode: "comparison"`. */
   comparison?: (v: Record<string, number>) => ComparisonResult;
+  /** Read-only values derived from inputs (e.g. annual revenue), shown for context. */
+  derived?: (v: Record<string, number>) => Record<string, number>;
 }
 
 const b = BENCHMARKS;
@@ -338,10 +416,13 @@ export const PRODUCTS: Product[] = [
     name: "RCM — Provider",
     segments: ["provider"],
     blurb:
-      "Runs the full billing cycle: clean claims out, denials prevented and recovered, cash in sooner.",
+      "See what claim denials cost you each year, and what the agent prevents and recovers.",
+    outputMode: "comparison", // renders the side-by-side comparison (Section 5)
+    period: "annual",
+    // ONLY editable inputs = the client's reality.
     fields: [
       {
-        key: "annualClaims",
+        key: "claimsPerYear",
         label: "Claims per year",
         type: "number",
         tier: "core",
@@ -360,78 +441,76 @@ export const PRODUCTS: Product[] = [
         step: 10,
         unit: "$",
       },
-      {
-        key: "annualRevenue",
-        label: "Annual revenue",
-        type: "currency",
-        tier: "core",
-        default: 60000000,
-        min: 1000000,
-        step: 1000000,
-        unit: "$",
-        hint: "Used only for the cash-freed line",
-      },
-      {
-        key: "denialRate",
-        label: "Current denial rate",
-        type: "percent",
-        tier: "advanced",
-        default: 0.118,
-        min: 0.03,
-        max: 0.25,
-        step: 0.005,
-        sourceKey: "initialDenialRate",
-      },
-      {
-        key: "daysARReduced",
-        label: "Days sooner you get paid",
-        type: "number",
-        tier: "advanced",
-        default: 5,
-        min: 1,
-        max: 30,
-        step: 1,
-        unit: "days",
-      },
-      {
-        key: "denialReduction",
-        label: "How much we reduce denials",
-        type: "slider",
-        tier: "advanced",
-        default: 0.3,
-        min: 0.1,
-        max: 0.35,
-        step: 0.05,
-        attribution: true,
-      },
     ],
+    // Derived, read-only. Shown for context, not editable, not part of the math.
+    derived: (v) => ({
+      annualRevenue: v.claimsPerYear * v.avgReimbursement,
+    }),
+    // For the app's value-category totals. Both are hard dollars, annual.
     compute: (v) => {
-      const denials = v.annualClaims * v.denialRate;
-      const reduced = denials * v.denialReduction;
-      const recovered = reduced * b.neverReworked.value * v.avgReimbursement;
-      const timeSaved = reduced * (1 - b.neverReworked.value) * b.reworkCost.value;
-      const cashFreed = (v.annualRevenue / 365) * v.daysARReduced;
+      const A = RCM_PROVIDER_AGENT,
+        I = RCM_PROVIDER_INDUSTRY;
+      const denials = v.claimsPerYear * I.denialRate.value;
+      const prevented = denials * A.denialReduction.value;
+      const revenueRecovered =
+        prevented * I.neverRecovered.value * v.avgReimbursement;
+      const reworkSaved =
+        prevented * (1 - I.neverRecovered.value) * I.reworkCost.value;
       return [
         {
           category: "moneyRecovered",
-          label: "Denials recovered",
-          amount: recovered,
-          sourceKeys: ["neverReworked", "initialDenialRate"],
+          label: "Denial write-offs recovered (annual)",
+          amount: revenueRecovered,
+          sourceKeys: ["rcmDenialRate", "rcmNeverRecovered", "rcmDenialReduction"],
         },
         {
           category: "timeSaved",
-          label: "Rework time saved",
-          amount: timeSaved,
-          sourceKeys: ["reworkCost"],
-        },
-        {
-          category: "cashFreed",
-          label: "Cash freed (faster AR)",
-          amount: cashFreed,
-          sourceKeys: [],
-          note: "Timing, not new money",
+          label: "Denial rework labor saved (annual)",
+          amount: reworkSaved,
+          sourceKeys: ["rcmReworkCost", "rcmDenialReduction"],
         },
       ];
+    },
+    // Powers the manual-vs-Quickflows comparison. Same math, manual vs automated.
+    comparison: (v) => {
+      const A = RCM_PROVIDER_AGENT,
+        I = RCM_PROVIDER_INDUSTRY;
+      const denials = v.claimsPerYear * I.denialRate.value;
+
+      const writeOffManual = denials * I.neverRecovered.value * v.avgReimbursement;
+      const writeOffQf = writeOffManual * (1 - A.denialReduction.value);
+
+      const reworkManual = denials * (1 - I.neverRecovered.value) * I.reworkCost.value;
+      const reworkQf = reworkManual * (1 - A.denialReduction.value);
+
+      const totalManual = writeOffManual + reworkManual;
+
+      return {
+        period: "annual",
+        rows: [
+          {
+            label: "Revenue lost to denials",
+            manual: writeOffManual,
+            automated: writeOffQf,
+            saved: writeOffManual - writeOffQf,
+          },
+          {
+            label: "Denial rework labor",
+            manual: reworkManual,
+            automated: reworkQf,
+            saved: reworkManual - reworkQf,
+          },
+        ],
+        totalManual,
+        totalAutomated: writeOffQf + reworkQf,
+        totalSaved: writeOffManual - writeOffQf + (reworkManual - reworkQf),
+        context: {
+          annualRevenue: v.claimsPerYear * v.avgReimbursement,
+          denialsPerYear: denials,
+          denialCostShareOfRevenue:
+            totalManual / (v.claimsPerYear * v.avgReimbursement),
+        },
+      };
     },
   },
 
