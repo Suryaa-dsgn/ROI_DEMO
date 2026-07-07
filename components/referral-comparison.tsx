@@ -12,56 +12,51 @@ import { AnimatedNumber } from "@/components/animated-number";
 import { DotMatrixTotal } from "@/components/dot-matrix-total";
 import { useRoi } from "@/components/roi-provider";
 import {
-  PROVIDERCRED_AGENT,
+  REFERRAL_AGENT,
   fieldsByTier,
   type Product,
 } from "@/lib/roi-config";
-import { formatCurrency } from "@/lib/format";
+import { formatPercent } from "@/lib/format";
 
-const A = PROVIDERCRED_AGENT;
+const A = REFERRAL_AGENT;
 
 const DRIVER_FACT = {
-  value: `${Math.round(A.verificationTimeReduction.value * 100)}%`,
-  label: "less manual provider verification time",
+  value: `${Math.round(A.coordinatorWorkReduction.value * 100)}%`,
+  label: "less manual coordinator work",
 };
 
-const REINFORCING_FACTS = [
-  { value: `${Math.round(A.lessManualWork.value * 100)}%`,      label: "less manual work" },
-  { value: `${Math.round(A.complianceExposure.value * 100)}%`,  label: "less compliance exposure" },
-  { value: `${Math.round(A.recredentialingTime.value * 100)}%`, label: "faster recredentialing" },
-  { value: `${Math.round(A.alertPrecision.value * 100)}%`,      label: "alert precision" },
-  { value: "100%",                                               label: "audit-ready reporting" },
-  { value: `${Math.round(A.rosterCapacity.value * 100)}%`,      label: "more roster capacity" },
+// Reinforcing fact chips. cycleDays uses before/after for "7→1 days".
+// "2,000+" is a reference label excluded from the constant (can't display as a dollar).
+const REINFORCING_FACTS: { value: string; label: string }[] = [
+  { value: `${A.cycleDays.before}→${A.cycleDays.after} days`, label: "avg referral cycle time" },
+  { value: `${Math.round(A.inNetworkRate.value * 100)}%`,     label: "more referrals in-network" },
+  { value: `${Math.round(A.authDelays.value * 100)}%`,        label: "fewer auth delays" },
+  { value: `${Math.round(A.referralVisibility.value * 100)}%`, label: "referral visibility" },
+  { value: `${Math.round(A.intakeProcessing.value * 100)}%`,  label: "less intake processing" },
+  { value: "2,000+",                                           label: "coordinator hours saved / yr" },
 ];
 
-// The three poster performance figures shown in "How this is calculated".
 const CALC_ROWS = [
-  { display: `${Math.round(A.verificationTimeReduction.value * 100)}%`, label: A.verificationTimeReduction.label, source: A.verificationTimeReduction.source },
-  { display: `${Math.round(A.onboardingSpeedup.value * 100)}%`,         label: A.onboardingSpeedup.label,         source: A.onboardingSpeedup.source },
-  { display: "$2M+",                                                     label: A.riskAvoidedPerYear.label,        source: A.riskAvoidedPerYear.source },
+  { display: formatPercent(A.coordinatorWorkReduction.value), label: A.coordinatorWorkReduction.label, source: A.coordinatorWorkReduction.source },
+  { display: formatPercent(A.leakageReduction.value),         label: A.leakageReduction.label,         source: A.leakageReduction.source },
 ];
 
 /**
- * Comparison-mode module for ProviderCred (annual). Left: six editable client
- * inputs in two groups (labor / onboarding). Right (sticky): labor-saved headline
- * + table + two clearly-separate lines (cash freed, risk avoided). Below: driver
- * fact, six reinforcing facts, how-calculated disclosure. All performance from
- * the poster; no external benchmarks.
+ * Comparison-mode module for Referral Management (monthly, standalone). Left:
+ * three editable client inputs. Right (sticky): coordinator-labor headline and
+ * comparison table, with the leakage capability fact clearly separated below.
+ * Reinforcing poster facts shown but never summed.
  */
-export function ProviderCredComparison({ product }: { product: Product }) {
+export function ReferralComparison({ product }: { product: Product }) {
   const { values, setValue } = useRoi();
   const { core } = fieldsByTier(product);
   const v = values[product.id];
   const c = product.comparison?.(v);
   if (!c) return null;
 
-  // Split the 6 core fields into two groups: first 3 = labor, last 3 = onboarding.
-  const laborFields     = core.slice(0, 3);
-  const onboardingFields = core.slice(3);
-
   return (
     <div className="space-y-6">
-      {/* Top row — inputs on the left, live savings on the right (no scroll). */}
+      {/* Top row — inputs and live savings side by side (no scroll). */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start">
         {/* Left — the client's reality (only editable area) */}
         <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)] sm:p-7">
@@ -69,16 +64,12 @@ export function ProviderCredComparison({ product }: { product: Product }) {
             Your process today
           </h3>
           <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-muted-foreground">
-            Every provider you cannot bill yet is revenue waiting. Here is what
-            manual credentialing costs your team today, and what the agent saves.
+            Referral leakage is one of the largest preventable revenue losses in
+            any care network. Here is what manual coordination costs your team
+            today, and what the agent saves.
           </p>
-
-          {/* Group 1 — credentialing labor (drives the total) */}
-          <p className="mt-7 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Credentialing labor
-          </p>
-          <div className="mt-3 grid grid-cols-1 gap-6">
-            {laborFields.map((f) => (
+          <div className="mt-7 grid grid-cols-1 gap-6">
+            {core.map((f) => (
               <InputField
                 key={f.key}
                 field={f}
@@ -87,42 +78,27 @@ export function ProviderCredComparison({ product }: { product: Product }) {
               />
             ))}
           </div>
-
-          {/* Group 2 — onboarding speed (separate faster-billing line, NOT the total) */}
-          <p className="mt-7 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Onboarding speed
+          <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+            Minutes per referral should cover intake, validation, prior-auth
+            follow-up, and closing the loop.
           </p>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Used for the separate revenue-captured-earlier line only. Not in the
-            total above.
-          </p>
-          <div className="mt-3 grid grid-cols-1 gap-6">
-            {onboardingFields.map((f) => (
-              <InputField
-                key={f.key}
-                field={f}
-                value={v[f.key]}
-                onChange={(val) => setValue(product.id, f.key, val)}
-              />
-            ))}
-          </div>
         </section>
 
-        {/* Right (sticky) — labor saved headline + table + two separate lines */}
+        {/* Right (sticky) — monthly savings + leakage fact */}
         <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)] sm:p-7 lg:sticky lg:top-8">
           <p className="text-sm text-muted-foreground">You save about</p>
           <div className="mt-1">
             <DotMatrixTotal value={c.totalSaved} size="md" tone="violet" />
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            every year with Quickflows.
+            every month with Quickflows.
           </p>
 
           <div className="mt-7 overflow-hidden rounded-xl border border-border">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-secondary/50 text-left">
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Per year</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">Per month</th>
                   <th className="px-4 py-3 text-right font-medium text-muted-foreground">Doing it manually</th>
                   <th className="px-4 py-3 text-right font-medium text-muted-foreground">With Quickflows</th>
                   <th className="px-4 py-3 text-right font-medium text-primary">You save</th>
@@ -144,7 +120,7 @@ export function ProviderCredComparison({ product }: { product: Product }) {
                   </tr>
                 ))}
                 <tr className="bg-secondary/40">
-                  <td className="px-4 py-3 font-semibold text-foreground">Total per year</td>
+                  <td className="px-4 py-3 font-semibold text-foreground">Total per month</td>
                   <td className="px-4 py-3 text-right">
                     <AnimatedNumber value={c.totalManual}    variant="currency" className="font-semibold text-foreground" />
                   </td>
@@ -159,37 +135,23 @@ export function ProviderCredComparison({ product }: { product: Product }) {
             </table>
           </div>
 
-          {/* Two separate lines — clearly distinct from the total */}
-          {c.separate ? (
-            <div className="mt-4 space-y-2 rounded-xl border border-dashed border-border bg-secondary/40 px-4 py-4">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <p className="text-xs font-medium text-foreground">
-                    Revenue captured earlier (arrives sooner, not new money)
-                  </p>
-                  <p className="mt-0.5 text-[0.7rem] leading-snug text-muted-foreground">
-                    Not in the total above.
-                  </p>
-                </div>
-                <span className="tabular shrink-0 font-mono text-sm font-semibold text-foreground">
-                  about {formatCurrency(c.separate.cashFreed)} / yr
-                </span>
-              </div>
-              <div className="border-t border-border pt-2">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <p className="text-xs font-medium text-foreground">
-                      Compliance exposure avoided (poster average, kept separate)
-                    </p>
-                    <p className="mt-0.5 text-[0.7rem] leading-snug text-muted-foreground">
-                      Never in the total.
-                    </p>
-                  </div>
-                  <span className="tabular shrink-0 font-mono text-sm font-semibold text-foreground">
-                    $2M+ / yr
-                  </span>
-                </div>
-              </div>
+          {/* Leakage fact — clearly separated, no dollar figure */}
+          {c.leakageFact ? (
+            <div className="mt-4 rounded-xl border border-dashed border-border bg-secondary/40 px-4 py-4">
+              <p className="text-sm font-semibold text-foreground">
+                {c.leakageFact.display}
+              </p>
+              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                Every out-of-network referral is lost revenue and a gap in care
+                continuity. Quickflows reduces leakage by{" "}
+                <span className="font-medium text-primary">
+                  {Math.round(c.leakageFact.value * 100)}%
+                </span>{" "}
+                by prioritizing in-network providers automatically.
+              </p>
+              <p className="mt-2 text-[0.7rem] leading-snug text-muted-foreground">
+                {c.leakageFact.note}
+              </p>
             </div>
           ) : null}
         </section>
@@ -245,14 +207,16 @@ export function ProviderCredComparison({ product }: { product: Product }) {
           </AccordionTrigger>
           <AccordionContent className="rounded-b-xl border border-t-0 border-border bg-card px-4 pb-4 pt-1">
             <p className="mb-3 mt-1 text-xs leading-relaxed text-muted-foreground">
-              Credentialing labor saved is providers per year × your manual hours
-              per provider × your staff hourly cost, with {Math.round(A.verificationTimeReduction.value * 100)}% removed
-              by the agent (the poster&apos;s figure). Revenue captured earlier is new billing
-              providers × days sooner they can bill × daily revenue — cash timing,
-              not new money, kept separate. The compliance risk figure is the
-              poster&apos;s $2M+ average, shown as-is, never in the total. The manual
-              hours per provider and onboarding days are your team&apos;s own numbers,
-              not poster claims. No external benchmarks are used for this agent.
+              Manual labor is referrals per month × minutes per referral ÷ 60 ×
+              coordinator hourly cost. The agent removes{" "}
+              {Math.round(A.coordinatorWorkReduction.value * 100)}% of that
+              coordinator work (the poster&apos;s figure). The{" "}
+              {Math.round(A.leakageReduction.value * 100)}% leakage reduction is
+              a real outcome shown as a capability fact — it has no dollar figure
+              because the value of a kept referral varies by contract. The
+              minutes per referral and coordinator cost are your team&apos;s own
+              numbers, not poster claims. No external benchmarks are used for
+              this agent.
             </p>
             <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
               {CALC_ROWS.map((row) => (

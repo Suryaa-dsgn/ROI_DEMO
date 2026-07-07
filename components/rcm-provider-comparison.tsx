@@ -267,10 +267,6 @@ export function RcmProviderComparison({ product }: { product: Product }) {
           ))}
         </div>
 
-        <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-          Reinforcing outcomes. Not added to the savings total, so the number
-          stays defensible.
-        </p>
       </section>
 
       {/* How this is calculated — full width */}

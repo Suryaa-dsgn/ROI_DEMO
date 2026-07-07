@@ -8,6 +8,7 @@ import {
   RCM_PROVIDER_INDUSTRY,
   RCM_PROVIDER_AGENT,
   PROVIDERCRED_AGENT,
+  REFERRAL_AGENT,
 } from "@/lib/roi-config";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/format";
 
@@ -26,6 +27,7 @@ export function ViewSources() {
     ...Object.entries(RCM_PROVIDER_INDUSTRY),
     ...Object.entries(RCM_PROVIDER_AGENT),
     ...Object.entries(PROVIDERCRED_AGENT),
+    ...Object.entries(REFERRAL_AGENT),
   ];
 
   return (

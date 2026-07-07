@@ -212,6 +212,31 @@ const PROVIDERCRED_SOURCES: Record<string, { label: string; source: string }> = 
   pcRiskAvoidedPerYear:        PROVIDERCRED_AGENT.riskAvoidedPerYear,
 };
 
+// --- Referral Management constants (see ROI_ReferralManagement_Modification.md) ---
+// Coordinator labor saved only in the total. Leakage is a capability fact (no dollar
+// figure). Everything is from the poster — no external benchmarks.
+
+// Quickflows agent performance — LOCKED, from the Referral Management poster. Never editable.
+export const REFERRAL_AGENT = {
+  coordinatorWorkReduction: { value: 0.80, label: "Less manual coordinator work",    source: "Quickflows (poster: 80% less manual coordinator work)" },
+  leakageReduction:         { value: 0.40, label: "Reduction in referral leakage",   source: "Quickflows (poster: 40% reduction in referral leakage)" },
+  // Reinforcing facts — DISPLAY ONLY. value-bearing so view-sources renders correctly.
+  // cycleDays.value = 7 (the "before" figure); before/after used in the component for "7→1 days".
+  cycleDays:          { value: 7,    before: 7, after: 1, label: "Avg referral cycle time (days before Quickflows)", source: "Quickflows (poster: 7→1 days)",               displayOnly: true },
+  inNetworkRate:      { value: 0.27,                      label: "More referrals kept in-network",                   source: "Quickflows (poster: 27% more in-network)",    displayOnly: true },
+  authDelays:         { value: 0.26,                      label: "Faster insurance approvals",                       source: "Quickflows (poster: 26% fewer auth delays)",   displayOnly: true },
+  referralVisibility: { value: 0.92,                      label: "Real-time referral status tracking",               source: "Quickflows (poster: 92% referral visibility)", displayOnly: true },
+  intakeProcessing:   { value: 0.90,                      label: "Less intake processing vs fax-based",              source: "Quickflows (poster: 90% less intake processing)", displayOnly: true },
+  // hoursSavedRef omitted — value 2000 would format as $2,000 in view-sources (wrong; it's hours).
+  // Component shows "2,000+" as a hardcoded string chip instead.
+} as const;
+
+// Referral source keys namespaced ("ref…") to avoid collisions with other maps.
+const REFERRAL_SOURCES: Record<string, { label: string; source: string }> = {
+  refCoordinatorWorkReduction: REFERRAL_AGENT.coordinatorWorkReduction,
+  refLeakageReduction:         REFERRAL_AGENT.leakageReduction,
+};
+
 /**
  * Resolve any sourced key to its { label, source } for tooltips and the Sources
  * view. Spans the shared BENCHMARKS plus the eligibility and RCM constant maps
@@ -240,6 +265,10 @@ export function getSource(key: string): { label: string; source: string } | null
   }
   if (key in PROVIDERCRED_SOURCES) {
     const b = PROVIDERCRED_SOURCES[key];
+    return { label: b.label, source: b.source };
+  }
+  if (key in REFERRAL_SOURCES) {
+    const b = REFERRAL_SOURCES[key];
     return { label: b.label, source: b.source };
   }
   return null;
@@ -295,6 +324,14 @@ export interface ComparisonResult {
   separate?: {
     cashFreed: number;
     riskAvoided: number;
+  };
+  /** Optional capability fact shown beneath the table — no dollar figure, never summed. */
+  leakageFact?: {
+    label: string;
+    value: number;
+    display: string;
+    source: string;
+    note: string;
   };
 }
 
@@ -829,49 +866,47 @@ export const PRODUCTS: Product[] = [
     id: "referral",
     name: "Referral Management",
     segments: ["homeHealth", "provider"],
-    blurb:
-      "Keeps referrals in-network and closes the loop automatically, so none are lost.",
+    blurb: "See what manual referral coordination costs your team each month, and what the agent saves.",
+    outputMode: "comparison",
+    period: "monthly",
+
+    // ONLY editable inputs = the client's reality (no poster figures here).
     fields: [
-      {
-        key: "coordinatorHoursSaved",
-        label: "Coordinator hours saved per year",
-        type: "number",
-        tier: "core",
-        default: 2000,
-        min: 0,
-        step: 100,
-        unit: "hrs",
-      },
-      {
-        key: "coordinatorHourly",
-        label: "Coordinator hourly cost",
-        type: "currency",
-        tier: "core",
-        default: 30,
-        min: 15,
-        step: 5,
-        unit: "$/hr",
-      },
+      { key: "referralsPerMonth", label: "Referrals handled per month",             type: "number",   tier: "core", default: 400, min: 10,  step: 10, unit: "referrals/mo" },
+      { key: "manualMinutes",     label: "Minutes to process one referral manually", type: "number",   tier: "core", default: 25,  min: 1,   max: 120, step: 1, unit: "min", hint: "Your team's number. Covers intake, validation, auth follow-up, and loop closure." },
+      { key: "coordinatorHourly", label: "Coordinator cost per hour",                type: "currency", tier: "core", default: 25,  min: 12,  step: 1,  unit: "$/hr" },
     ],
+
     compute: (v) => {
-      const timeSaved = v.coordinatorHoursSaved * v.coordinatorHourly;
-      // Revenue-retention line intentionally omitted: leakage rate and value
-      // per referral are not yet sourced (see FINAL BUILD_CONTEXT Section 14).
+      const A = REFERRAL_AGENT;
+      const manualLabor = (v.referralsPerMonth * v.manualMinutes / 60) * v.coordinatorHourly;
+      const laborSaved  = manualLabor * A.coordinatorWorkReduction.value;
       return [
-        {
-          category: "timeSaved",
-          label: "Coordinator time saved",
-          amount: timeSaved,
-          sourceKeys: [],
-        },
+        { category: "timeSaved", label: "Coordinator labor saved (monthly)", amount: laborSaved, sourceKeys: ["refCoordinatorWorkReduction"] },
       ];
     },
-    disabledLines: [
-      {
-        label: "Retained revenue",
-        reason: "Source pending",
-      },
-    ],
+
+    comparison: (v) => {
+      const A = REFERRAL_AGENT;
+      const manualLabor = (v.referralsPerMonth * v.manualMinutes / 60) * v.coordinatorHourly;
+      const autoLabor   = manualLabor * (1 - A.coordinatorWorkReduction.value);
+      return {
+        period: "monthly",
+        rows: [
+          { label: "Referral coordination labor", manual: manualLabor, automated: autoLabor, saved: manualLabor - autoLabor },
+        ],
+        totalManual:    manualLabor,
+        totalAutomated: autoLabor,
+        totalSaved:     manualLabor - autoLabor,
+        leakageFact: {
+          label:   "Referral leakage reduced",
+          value:   A.leakageReduction.value,
+          display: `${Math.round(A.leakageReduction.value * 100)}% reduction in referral leakage`,
+          source:  A.leakageReduction.source,
+          note:    "Not expressed as a dollar figure, because the value of a kept referral varies by contract. Shown as a capability fact.",
+        },
+      };
+    },
   },
 ];
 
