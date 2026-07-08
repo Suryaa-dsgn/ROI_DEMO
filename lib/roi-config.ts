@@ -128,9 +128,9 @@ export const ELIGIBILITY_DEFAULTS = {
 // Quickflows agent performance — LOCKED, from the RCM Provider poster. Never editable.
 export const RCM_PROVIDER_AGENT = {
   denialReduction: {
-    value: 0.35,
+    value: 0.45,
     label: "Fewer denials with pre-submission AI review",
-    source: "Quickflows (poster: 35% fewer denials)",
+    source: "Quickflows RCM Provider",
   },
   // Reinforcing facts — DISPLAY ONLY. Shown as capability facts, never summed.
   fasterAppeals: {
@@ -193,23 +193,21 @@ const RCM_PROVIDER_SOURCES: Record<string, { label: string; source: string }> = 
 
 // Quickflows agent performance — LOCKED, from the ProviderCred poster. Never editable.
 export const PROVIDERCRED_AGENT = {
-  verificationTimeReduction: { value: 0.70,    label: "Reduction in manual provider verification time", source: "Quickflows (poster: 70% faster onboarding)" },
-  onboardingSpeedup:         { value: 0.70,    label: "Faster onboarding (same 70% figure)",            source: "Quickflows (poster: 70% faster onboarding)" },
-  riskAvoidedPerYear:        { value: 2000000, label: "Average compliance exposure eliminated per year", source: "Quickflows (poster: $2M+ risk avoided)" },
+  credentialingTimeReduction:   { value: 0.90, label: "Manual credentialing time eliminated",        source: "Quickflows ProviderCred" },
+  recredentialingTimeReduction: { value: 0.95, label: "Recredentialing time eliminated",             source: "Quickflows ProviderCred" },
+  riskAvoidedPerYear:           { value: 2000000, label: "Average compliance exposure eliminated per year", source: "Quickflows ProviderCred ($2M+ risk avoided)" },
   // Reinforcing facts — DISPLAY ONLY. Never monetized, never in the total.
-  lessManualWork:      { value: 0.85, label: "Less spreadsheet-based credentialing work",             source: "Quickflows (poster: 85% less manual work)",     displayOnly: true },
-  complianceExposure:  { value: 0.80, label: "Less undetected compliance exposure",                   source: "Quickflows (poster: 80% compliance exposure)",  displayOnly: true },
-  recredentialingTime: { value: 0.90, label: "Faster recredentialing cycles",                         source: "Quickflows (poster: 90% recredentialing time)", displayOnly: true },
-  alertPrecision:      { value: 0.92, label: "Improvement in match accuracy vs name-only screening",  source: "Quickflows (poster: 92% alert precision)",      displayOnly: true },
-  auditReady:          { value: 1.00, label: "Audit-ready reporting on demand",                       source: "Quickflows (poster: 100% audit-ready)",         displayOnly: true },
-  rosterCapacity:      { value: 0.75, label: "More providers credentialed with the same team",        source: "Quickflows (poster: 75% roster capacity)",      displayOnly: true },
+  complianceExposure:  { value: 0.80, label: "Less undetected compliance exposure",    source: "Quickflows ProviderCred (80%)",  displayOnly: true },
+  recredentialingFact: { value: 0.90, label: "Faster recredentialing cycles",          source: "Quickflows ProviderCred (90%)",  displayOnly: true },
+  alertPrecision:      { value: 0.92, label: "Improvement in alert match accuracy",    source: "Quickflows ProviderCred (92%)",  displayOnly: true },
+  auditReady:          { value: 1.00, label: "Compliance reports generated on demand", source: "Quickflows ProviderCred (100%)", displayOnly: true },
 } as const;
 
 // ProviderCred source keys namespaced ("pc…") to future-proof against collisions.
 const PROVIDERCRED_SOURCES: Record<string, { label: string; source: string }> = {
-  pcVerificationTimeReduction: PROVIDERCRED_AGENT.verificationTimeReduction,
-  pcOnboardingSpeedup:         PROVIDERCRED_AGENT.onboardingSpeedup,
-  pcRiskAvoidedPerYear:        PROVIDERCRED_AGENT.riskAvoidedPerYear,
+  pcCredentialingTimeReduction:   PROVIDERCRED_AGENT.credentialingTimeReduction,
+  pcRecredentialingTimeReduction: PROVIDERCRED_AGENT.recredentialingTimeReduction,
+  pcRiskAvoidedPerYear:           PROVIDERCRED_AGENT.riskAvoidedPerYear,
 };
 
 // --- Referral Management constants (see ROI_ReferralManagement_Modification.md) ---
@@ -235,6 +233,31 @@ export const REFERRAL_AGENT = {
 const REFERRAL_SOURCES: Record<string, { label: string; source: string }> = {
   refCoordinatorWorkReduction: REFERRAL_AGENT.coordinatorWorkReduction,
   refLeakageReduction:         REFERRAL_AGENT.leakageReduction,
+};
+
+// --- Quickflows Scheduler constants (see ROI_Scheduler_Modification.md) ---
+// Parts 1+2 (staffing + scheduling effort) in the total. Part 3 (filled-shift revenue)
+// is shown separately below the table, never summed. All performance from the poster.
+
+// Quickflows Scheduler performance — LOCKED, from the poster. Never editable.
+export const SCHEDULER_AGENT = {
+  overtimeReduction:    { value: 0.18, label: "Reduction in overtime and agency spend",             source: "Quickflows Scheduler (18% lower overtime spend)" },
+  coordinatorReduction: { value: 0.40, label: "Less manual time building and adjusting schedules",   source: "Quickflows Scheduler (40% less coordinator workload)" },
+  retentionImprovement: { value: 0.25, label: "Improvement in caregiver retention",                  source: "Quickflows Scheduler (25% caregiver retention improvement)" },
+  autoFillRate:         { value: 0.92, label: "Open shifts filled automatically",                    source: "Quickflows Scheduler (92% automatic fill rate)" },
+  // Reinforcing facts — DISPLAY ONLY. Never monetized, never in the total.
+  scheduleAccuracy: { value: 0.96, label: "Shifts filled meeting skill and compliance requirements", source: "Quickflows Scheduler (96% schedule accuracy)",          displayOnly: true },
+  callOffResponse:  { value: 5,    label: "Minutes from call-off to confirmed replacement",         source: "Quickflows Scheduler (<5 min call-off response)",      displayOnly: true },
+  advanceWarning:   { value: 2,    label: "Weeks of advance capacity warning",                      source: "Quickflows Scheduler (2+ weeks advance warning)",      displayOnly: true },
+  auditCoverage:    { value: 1.00, label: "Every assignment and swap fully traceable",               source: "Quickflows Scheduler (100% audit trail coverage)",     displayOnly: true },
+} as const;
+
+// Scheduler source keys namespaced ("sched…") for consistency.
+const SCHEDULER_SOURCES: Record<string, { label: string; source: string }> = {
+  schedOvertimeReduction:    SCHEDULER_AGENT.overtimeReduction,
+  schedCoordinatorReduction: SCHEDULER_AGENT.coordinatorReduction,
+  schedRetentionImprovement: SCHEDULER_AGENT.retentionImprovement,
+  schedAutoFillRate:         SCHEDULER_AGENT.autoFillRate,
 };
 
 /**
@@ -271,6 +294,10 @@ export function getSource(key: string): { label: string; source: string } | null
     const b = REFERRAL_SOURCES[key];
     return { label: b.label, source: b.source };
   }
+  if (key in SCHEDULER_SOURCES) {
+    const b = SCHEDULER_SOURCES[key];
+    return { label: b.label, source: b.source };
+  }
   return null;
 }
 
@@ -293,6 +320,7 @@ export interface Field {
   hint?: string; // small helper text
   attribution?: boolean; // "how much we fix" control; tag as assumption
   sourceKey?: SourceKey; // show source when default comes from a benchmark/default
+  group?: string; // display group tag for multi-group comparison views (e.g. scheduler)
 }
 
 export interface DisabledLine {
@@ -306,6 +334,8 @@ export interface ComparisonRow {
   manual: number;
   automated: number;
   saved: number;
+  /** Optional group label for multi-group tables (e.g. scheduler). */
+  group?: string;
 }
 
 export interface ComparisonResult {
@@ -322,8 +352,18 @@ export interface ComparisonResult {
   };
   /** Optional separate figures shown below the total but never added to it. */
   separate?: {
-    cashFreed: number;
+    cashFreed?: number;
     riskAvoided: number;
+    label?: string;
+    note?: string;
+    source?: string;
+  };
+  /** Optional separate revenue figure (e.g. scheduler filled-shift revenue) — never in the total. */
+  revenueSeparate?: {
+    amount: number;
+    label: string;
+    note: string;
+    source: string;
   };
   /** Optional capability fact shown beneath the table — no dollar figure, never summed. */
   leakageFact?: {
@@ -371,7 +411,7 @@ export const PRODUCTS: Product[] = [
         label: "Scheduled appointments per month",
         type: "number",
         tier: "core",
-        default: 2000,
+        default: 10000,
         min: 50,
         step: 50,
         unit: "visits/mo",
@@ -381,7 +421,7 @@ export const PRODUCTS: Product[] = [
         label: "Minutes to verify one patient manually",
         type: "number",
         tier: "core",
-        default: 12.64,
+        default: 20,
         min: 1,
         max: 60,
         step: 0.5,
@@ -394,7 +434,7 @@ export const PRODUCTS: Product[] = [
         label: "Verification staff cost per hour",
         type: "currency",
         tier: "core",
-        default: 21,
+        default: 40,
         min: 12,
         step: 1,
         unit: "$/hr",
@@ -406,7 +446,7 @@ export const PRODUCTS: Product[] = [
         label: "Your average payment per visit",
         type: "currency",
         tier: "core",
-        default: 150,
+        default: 2000,
         min: 20,
         step: 10,
         unit: "$",
@@ -497,7 +537,7 @@ export const PRODUCTS: Product[] = [
         label: "Claims per year",
         type: "number",
         tier: "core",
-        default: 200000,
+        default: 80000,
         min: 1000,
         step: 1000,
         unit: "claims/yr",
@@ -507,7 +547,7 @@ export const PRODUCTS: Product[] = [
         label: "Average payment per claim",
         type: "currency",
         tier: "core",
-        default: 300,
+        default: 500,
         min: 10,
         step: 10,
         unit: "$",
@@ -689,47 +729,49 @@ export const PRODUCTS: Product[] = [
 
     // ONLY editable inputs = the client's reality (no poster figures here).
     fields: [
-      // Credentialing labor — drives the headline total
-      { key: "providersPerYear",    label: "Providers credentialed per year",       type: "number",   tier: "core", default: 500,  min: 10,  step: 10,  unit: "providers/yr" },
-      { key: "manualHours",         label: "Hours to verify one provider manually",  type: "number",   tier: "core", default: 6,    min: 0.5, max: 40, step: 0.5, unit: "hrs",   hint: "Your team's real number. Placeholder, not a poster figure." },
-      { key: "staffHourly",         label: "Credentialing staff cost per hour",      type: "currency", tier: "core", default: 35,   min: 15,  step: 1,   unit: "$/hr" },
-      // Onboarding speed — feeds the separate faster-billing line only, NOT the total
-      { key: "newBillingProviders", label: "New billing providers per year",          type: "number",   tier: "core", default: 100,  min: 0,   step: 5,   unit: "providers" },
-      { key: "onboardingDays",      label: "Days to onboard a new provider today",   type: "number",   tier: "core", default: 30,   min: 1,   max: 180, step: 1,   unit: "days",  hint: "Your team's real number. Placeholder, not a poster figure." },
-      { key: "billingPerDay",       label: "Revenue a provider bills per day",        type: "currency", tier: "core", default: 2000, min: 100, step: 100, unit: "$/day" },
+      // Group: credentialing — new provider verifications
+      { key: "newCredentialsPerYear",  label: "New providers credentialed per year",          type: "number",   tier: "core", group: "credentialing",   default: 15000, min: 10,  step: 100, unit: "providers/yr" },
+      { key: "minutesPerCredential",   label: "Time to verify one new provider manually",     type: "number",   tier: "core", group: "credentialing",   default: 30,    min: 1,   max: 480, step: 1, unit: "min", hint: "Your team's real number" },
+      // Group: recredentialing — ongoing renewals
+      { key: "recredentialsPerYear",   label: "Providers recredentialed per year",            type: "number",   tier: "core", group: "recredentialing", default: 40000, min: 10,  step: 100, unit: "providers/yr" },
+      { key: "minutesPerRecredential", label: "Time to recredential one provider manually",   type: "number",   tier: "core", group: "recredentialing", default: 6,     min: 1,   max: 120,  step: 1, unit: "min", hint: "Your team's real number" },
+      // Shared across both groups
+      { key: "staffHourly",            label: "Credentialing staff cost per hour",            type: "currency", tier: "core", group: "shared",          default: 35,    min: 15,  step: 1,   unit: "$/hr" },
     ],
 
     compute: (v) => {
       const A = PROVIDERCRED_AGENT;
-      const manualLabor = v.providersPerYear * v.manualHours * v.staffHourly;
-      const laborSaved  = manualLabor * A.verificationTimeReduction.value;
-      const daysSooner  = v.onboardingDays * A.onboardingSpeedup.value;
-      const cashFreed   = v.newBillingProviders * daysSooner * v.billingPerDay;
-      const riskAvoided = A.riskAvoidedPerYear.value;
+      const credentialingManual  = v.newCredentialsPerYear * (v.minutesPerCredential / 60) * v.staffHourly;
+      const credentialingSaved   = credentialingManual * A.credentialingTimeReduction.value;
+      const recredentialingManual = v.recredentialsPerYear * (v.minutesPerRecredential / 60) * v.staffHourly;
+      const recredentialingSaved  = recredentialingManual * A.recredentialingTimeReduction.value;
       return [
-        { category: "timeSaved",   label: "Credentialing labor saved (annual)",  amount: laborSaved,  sourceKeys: ["pcVerificationTimeReduction"] },
-        { category: "cashFreed",   label: "Revenue captured earlier (annual)",    amount: cashFreed,   sourceKeys: ["pcOnboardingSpeedup"],        note: "Timing, not new money. Separate line." },
-        { category: "riskAvoided", label: "Compliance exposure avoided (annual)", amount: riskAvoided, sourceKeys: ["pcRiskAvoidedPerYear"],        note: "Poster average. Separate line, never in the total." },
+        { category: "timeSaved",   label: "New credentialing time saved (annual)",  amount: credentialingSaved,   sourceKeys: ["pcCredentialingTimeReduction"] },
+        { category: "timeSaved",   label: "Recredentialing time saved (annual)",    amount: recredentialingSaved, sourceKeys: ["pcRecredentialingTimeReduction"] },
+        { category: "riskAvoided", label: "Compliance exposure avoided (annual)",   amount: A.riskAvoidedPerYear.value, sourceKeys: ["pcRiskAvoidedPerYear"], note: "Separate line, never in the total." },
       ];
     },
 
     comparison: (v) => {
       const A = PROVIDERCRED_AGENT;
-      const manualLabor = v.providersPerYear * v.manualHours * v.staffHourly;
-      const autoLabor   = manualLabor * (1 - A.verificationTimeReduction.value);
-      const daysSooner  = v.onboardingDays * A.onboardingSpeedup.value;
-      const cashFreed   = v.newBillingProviders * daysSooner * v.billingPerDay;
+      const credManual  = v.newCredentialsPerYear * (v.minutesPerCredential / 60) * v.staffHourly;
+      const credQf      = credManual * (1 - A.credentialingTimeReduction.value);
+      const recredManual = v.recredentialsPerYear * (v.minutesPerRecredential / 60) * v.staffHourly;
+      const recredQf     = recredManual * (1 - A.recredentialingTimeReduction.value);
       return {
         period: "annual",
         rows: [
-          { label: "Credentialing verification labor", manual: manualLabor, automated: autoLabor, saved: manualLabor - autoLabor },
+          { label: "New credentialing labor",  manual: credManual,  automated: credQf,  saved: credManual - credQf,   group: "Credentialing" },
+          { label: "Recredentialing labor",    manual: recredManual, automated: recredQf, saved: recredManual - recredQf, group: "Recredentialing" },
         ],
-        totalManual:     manualLabor,
-        totalAutomated:  autoLabor,
-        totalSaved:      manualLabor - autoLabor,
+        totalManual:    credManual + recredManual,
+        totalAutomated: credQf + recredQf,
+        totalSaved:     (credManual - credQf) + (recredManual - recredQf),
         separate: {
-          cashFreed,
           riskAvoided: A.riskAvoidedPerYear.value,
+          label: "Compliance exposure avoided",
+          note:  "Kept separate, never in the total above.",
+          source: A.riskAvoidedPerYear.source,
         },
       };
     },
@@ -739,126 +781,80 @@ export const PRODUCTS: Product[] = [
     id: "scheduler",
     name: "Quickflows Scheduler",
     segments: ["homeHealth", "provider"],
-    blurb:
-      "Fills open shifts and replaces call-offs automatically, cutting agency spend, overtime, and burnout.",
+    blurb: "See what reactive scheduling costs your operation each year, and what the agent saves.",
+    outputMode: "comparison",
+    period: "annual",
+
+    // ONLY editable inputs = the client's operational reality, grouped for display.
     fields: [
-      {
-        key: "agencySpend",
-        label: "Agency / temp spend per year",
-        type: "currency",
-        tier: "core",
-        default: 800000,
-        min: 0,
-        step: 10000,
-        unit: "$",
-      },
-      {
-        key: "overtimeSpend",
-        label: "Overtime spend per year",
-        type: "currency",
-        tier: "core",
-        default: 300000,
-        min: 0,
-        step: 10000,
-        unit: "$",
-      },
-      {
-        key: "departuresPrevented",
-        label: "Burnout departures prevented per year",
-        type: "number",
-        tier: "core",
-        default: 4,
-        min: 0,
-        max: 50,
-        step: 1,
-        unit: "people",
-      },
-      {
-        key: "agencyReduction",
-        label: "How much we cut agency spend",
-        type: "slider",
-        tier: "advanced",
-        default: 0.2,
-        min: 0.05,
-        max: 0.35,
-        step: 0.05,
-        attribution: true,
-      },
-      {
-        key: "overtimeReduction",
-        label: "How much we cut overtime",
-        type: "slider",
-        tier: "advanced",
-        default: 0.15,
-        min: 0.05,
-        max: 0.3,
-        step: 0.05,
-        attribution: true,
-      },
-      {
-        key: "replacementCost",
-        label: "Cost to replace one caregiver",
-        type: "currency",
-        tier: "advanced",
-        default: 60090,
-        min: 10000,
-        step: 1000,
-        unit: "$",
-        sourceKey: "rnReplacement",
-        hint: "RN benchmark; use your role-specific cost for aides",
-      },
-      {
-        key: "coordinatorHoursSaved",
-        label: "Coordinator hours saved per year",
-        type: "number",
-        tier: "advanced",
-        default: 300,
-        min: 0,
-        step: 25,
-        unit: "hrs",
-      },
-      {
-        key: "coordinatorHourly",
-        label: "Coordinator hourly cost",
-        type: "currency",
-        tier: "advanced",
-        default: 30,
-        min: 15,
-        step: 5,
-        unit: "$/hr",
-      },
+      // GROUP 1 — Staffing costs (drives Part 1 of the total)
+      { key: "avgHourlyRate",      label: "Average staff hourly rate",           type: "currency", tier: "core", group: "staffing",   default: 35,    min: 10,   step: 1,    unit: "$/hr" },
+      { key: "overtimeHoursWeek",  label: "Overtime hours per week (all staff)", type: "number",  tier: "core", group: "staffing",   default: 120,   min: 0,    step: 5,    unit: "hrs/wk" },
+      { key: "overtimeMultiplier", label: "Overtime rate multiplier",             type: "number",  tier: "core", group: "staffing",   default: 1.5,   min: 1,    max: 3,  step: 0.25, hint: "Typically 1.5× for time-and-a-half" },
+      { key: "agencyHoursWeek",    label: "Agency hours used per week",           type: "number",  tier: "core", group: "staffing",   default: 150,   min: 0,    step: 5,    unit: "hrs/wk" },
+      { key: "agencyHourlyRate",   label: "Agency hourly cost",                   type: "currency", tier: "core", group: "staffing",  default: 85,    min: 20,   step: 5,    unit: "$/hr" },
+      // GROUP 2 — Scheduling effort (drives Part 2 of the total)
+      { key: "schedulingHoursWeek", label: "Manual scheduling hours per week",   type: "number",  tier: "core", group: "scheduling", default: 25,    min: 1,    step: 1,    unit: "hrs/wk" },
+      { key: "schedulerRate",       label: "Scheduler hourly rate",               type: "currency", tier: "core", group: "scheduling", default: 45,   min: 15,   step: 1,    unit: "$/hr" },
+      { key: "numSchedulers",       label: "Number of schedulers",                type: "number",  tier: "core", group: "scheduling", default: 3,     min: 1,    step: 1,    unit: "people" },
+      { key: "staffReplacementsYr", label: "Staff replacements per year",         type: "number",  tier: "core", group: "scheduling", default: 8,     min: 0,    step: 1,    unit: "per yr" },
+      { key: "replacementCost",     label: "Cost to replace one staff member",    type: "currency", tier: "core", group: "scheduling", default: 60000, min: 5000, step: 1000, unit: "$" },
+      // GROUP 3 — Unfilled shifts (feeds Part 3 only — the separate revenue line)
+      { key: "unfilledShiftsMo",   label: "Unfilled shifts per month",            type: "number",  tier: "core", group: "revenue",    default: 12,    min: 0,    step: 1,    unit: "shifts/mo" },
+      { key: "revenuePerShift",    label: "Average revenue per shift (8 hrs)",    type: "currency", tier: "core", group: "revenue",   default: 600,   min: 50,   step: 50,   unit: "$" },
     ],
+
+    // For the app's value-category totals. Parts 1+2 only. Annual.
     compute: (v) => {
-      const agencySaved = v.agencySpend * v.agencyReduction;
-      const overtimeSaved = v.overtimeSpend * v.overtimeReduction;
-      const turnoverSaved = v.departuresPrevented * v.replacementCost;
-      const timeSaved = v.coordinatorHoursSaved * v.coordinatorHourly;
+      const A = SCHEDULER_AGENT;
+      const agencyPremiumAnnual   = v.agencyHoursWeek * (v.agencyHourlyRate - v.avgHourlyRate) * 52;
+      const overtimePremiumAnnual = v.overtimeHoursWeek * v.avgHourlyRate * (v.overtimeMultiplier - 1) * 52;
+      const agencySaved           = agencyPremiumAnnual   * A.overtimeReduction.value;
+      const overtimeSaved         = overtimePremiumAnnual * A.overtimeReduction.value;
+      const schedulingLaborAnnual = v.schedulingHoursWeek * v.schedulerRate * v.numSchedulers * 52;
+      const schedulingLaborSaved  = schedulingLaborAnnual * A.coordinatorReduction.value;
+      const turnoverCostAnnual    = v.staffReplacementsYr * v.replacementCost;
+      const turnoverSaved         = turnoverCostAnnual * A.retentionImprovement.value;
       return [
-        {
-          category: "moneySaved",
-          label: "Agency spend cut",
-          amount: agencySaved,
-          sourceKeys: ["agencyGap"],
-        },
-        {
-          category: "moneySaved",
-          label: "Overtime cut",
-          amount: overtimeSaved,
-          sourceKeys: [],
-        },
-        {
-          category: "moneySaved",
-          label: "Turnover avoided",
-          amount: turnoverSaved,
-          sourceKeys: ["rnReplacement", "rnTurnover"],
-        },
-        {
-          category: "timeSaved",
-          label: "Coordinator time saved",
-          amount: timeSaved,
-          sourceKeys: [],
-        },
+        { category: "moneySaved", label: "Agency premium eliminated (annual)",  amount: agencySaved,         sourceKeys: ["schedOvertimeReduction"] },
+        { category: "moneySaved", label: "Overtime premium eliminated (annual)", amount: overtimeSaved,       sourceKeys: ["schedOvertimeReduction"] },
+        { category: "timeSaved",  label: "Scheduling labor saved (annual)",      amount: schedulingLaborSaved, sourceKeys: ["schedCoordinatorReduction"] },
+        { category: "moneySaved", label: "Turnover cost avoided (annual)",       amount: turnoverSaved,       sourceKeys: ["schedRetentionImprovement"] },
       ];
+    },
+
+    // Powers the side-by-side comparison. Part 3 in revenueSeparate.
+    comparison: (v) => {
+      const A = SCHEDULER_AGENT;
+      const agencyPremiumAnnual   = v.agencyHoursWeek * (v.agencyHourlyRate - v.avgHourlyRate) * 52;
+      const overtimePremiumAnnual = v.overtimeHoursWeek * v.avgHourlyRate * (v.overtimeMultiplier - 1) * 52;
+      const agencyQf    = agencyPremiumAnnual   * (1 - A.overtimeReduction.value);
+      const overtimeQf  = overtimePremiumAnnual * (1 - A.overtimeReduction.value);
+      const schedulingLaborAnnual = v.schedulingHoursWeek * v.schedulerRate * v.numSchedulers * 52;
+      const schedulingQf = schedulingLaborAnnual * (1 - A.coordinatorReduction.value);
+      const turnoverAnnual = v.staffReplacementsYr * v.replacementCost;
+      const turnoverQf     = turnoverAnnual * (1 - A.retentionImprovement.value);
+      const totalManual    = agencyPremiumAnnual + overtimePremiumAnnual + schedulingLaborAnnual + turnoverAnnual;
+      const totalAutomated = agencyQf + overtimeQf + schedulingQf + turnoverQf;
+      const revenueRecoveredAnnual = v.unfilledShiftsMo * A.autoFillRate.value * v.revenuePerShift * 12;
+      return {
+        period: "annual",
+        rows: [
+          { label: "Agency premium cost",   manual: agencyPremiumAnnual,   automated: agencyQf,   saved: agencyPremiumAnnual - agencyQf,   group: "Staffing costs" },
+          { label: "Overtime premium cost", manual: overtimePremiumAnnual, automated: overtimeQf, saved: overtimePremiumAnnual - overtimeQf, group: "Staffing costs" },
+          { label: "Scheduling labor",      manual: schedulingLaborAnnual, automated: schedulingQf, saved: schedulingLaborAnnual - schedulingQf, group: "Scheduling effort" },
+          { label: "Staff turnover cost",   manual: turnoverAnnual,        automated: turnoverQf, saved: turnoverAnnual - turnoverQf,        group: "Scheduling effort" },
+        ],
+        totalManual,
+        totalAutomated,
+        totalSaved: totalManual - totalAutomated,
+        revenueSeparate: {
+          amount: revenueRecoveredAnnual,
+          label:  "Revenue from filled shifts",
+          note:   "Shown separately, not added to the total above.",
+          source: A.autoFillRate.source,
+        },
+      };
     },
   },
 
@@ -872,9 +868,9 @@ export const PRODUCTS: Product[] = [
 
     // ONLY editable inputs = the client's reality (no poster figures here).
     fields: [
-      { key: "referralsPerMonth", label: "Referrals handled per month",             type: "number",   tier: "core", default: 400, min: 10,  step: 10, unit: "referrals/mo" },
-      { key: "manualMinutes",     label: "Minutes to process one referral manually", type: "number",   tier: "core", default: 25,  min: 1,   max: 120, step: 1, unit: "min", hint: "Your team's number. Covers intake, validation, auth follow-up, and loop closure." },
-      { key: "coordinatorHourly", label: "Coordinator cost per hour",                type: "currency", tier: "core", default: 25,  min: 12,  step: 1,  unit: "$/hr" },
+      { key: "referralsPerMonth", label: "Referrals handled per month",             type: "number",   tier: "core", default: 1500, min: 10,  step: 10, unit: "referrals/mo" },
+      { key: "manualMinutes",     label: "Minutes to process one referral manually", type: "number",   tier: "core", default: 25,   min: 1,   max: 120, step: 1, unit: "min", hint: "Your team's number. Covers intake, validation, auth follow-up, and loop closure." },
+      { key: "coordinatorHourly", label: "Coordinator cost per hour",                type: "currency", tier: "core", default: 40,   min: 12,  step: 1,  unit: "$/hr" },
     ],
 
     compute: (v) => {

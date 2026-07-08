@@ -22,7 +22,7 @@ const A = REFERRAL_AGENT;
 
 const DRIVER_FACT = {
   value: `${Math.round(A.coordinatorWorkReduction.value * 100)}%`,
-  label: "less manual coordinator work",
+  label: "of manual referral coordination time eliminated",
 };
 
 // Reinforcing fact chips. cycleDays uses before/after for "7→1 days".
@@ -64,9 +64,10 @@ export function ReferralComparison({ product }: { product: Product }) {
             Your process today
           </h3>
           <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-muted-foreground">
-            Referral leakage is one of the largest preventable revenue losses in
-            any care network. Here is what manual coordination costs your team
-            today, and what the agent saves.
+            Your coordinators spend significant time on every referral —
+            capturing, validating, matching, chasing authorizations, and closing
+            the loop. Here is what that costs today, and how much of it the
+            agent handles.
           </p>
           <div className="mt-7 grid grid-cols-1 gap-6">
             {core.map((f) => (
@@ -209,8 +210,8 @@ export function ReferralComparison({ product }: { product: Product }) {
             <p className="mb-3 mt-1 text-xs leading-relaxed text-muted-foreground">
               Manual labor is referrals per month × minutes per referral ÷ 60 ×
               coordinator hourly cost. The agent removes{" "}
-              {Math.round(A.coordinatorWorkReduction.value * 100)}% of that
-              coordinator work (the poster&apos;s figure). The{" "}
+              {Math.round(A.coordinatorWorkReduction.value * 100)}% of manual
+              referral coordination time (the poster&apos;s figure). The{" "}
               {Math.round(A.leakageReduction.value * 100)}% leakage reduction is
               a real outcome shown as a capability fact — it has no dollar figure
               because the value of a kept referral varies by contract. The

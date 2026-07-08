@@ -13,6 +13,7 @@ import { EligibilityComparison } from "@/components/eligibility-comparison";
 import { RcmProviderComparison } from "@/components/rcm-provider-comparison";
 import { ProviderCredComparison } from "@/components/providercred-comparison";
 import { ReferralComparison } from "@/components/referral-comparison";
+import { SchedulerComparison } from "@/components/scheduler-comparison";
 import { useRoi } from "@/components/roi-provider";
 import { fieldsByTier } from "@/lib/roi-config";
 
@@ -82,6 +83,8 @@ export function CalculatorWorkspace() {
                 <ProviderCredComparison product={activeProduct} />
               ) : activeProduct.id === "referral" ? (
                 <ReferralComparison product={activeProduct} />
+              ) : activeProduct.id === "scheduler" ? (
+                <SchedulerComparison product={activeProduct} />
               ) : (
                 <EligibilityComparison product={activeProduct} />
               )}
