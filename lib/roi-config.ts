@@ -241,10 +241,11 @@ const REFERRAL_SOURCES: Record<string, { label: string; source: string }> = {
 
 // Quickflows Scheduler performance — LOCKED, from the poster. Never editable.
 export const SCHEDULER_AGENT = {
-  overtimeReduction:    { value: 0.18, label: "Reduction in overtime and agency spend",             source: "Quickflows Scheduler (18% lower overtime spend)" },
-  coordinatorReduction: { value: 0.40, label: "Less manual time building and adjusting schedules",   source: "Quickflows Scheduler (40% less coordinator workload)" },
-  retentionImprovement: { value: 0.25, label: "Improvement in caregiver retention",                  source: "Quickflows Scheduler (25% caregiver retention improvement)" },
-  autoFillRate:         { value: 0.92, label: "Open shifts filled automatically",                    source: "Quickflows Scheduler (92% automatic fill rate)" },
+  overtimeReduction:    { value: 0.60, label: "Reduction in overtime spend",              source: "Quickflows Scheduler (60% overtime reduction)" },
+  agencyReduction:      { value: 0.40, label: "Reduction in agency hours",               source: "Quickflows Scheduler (40% agency hour reduction)" },
+  coordinatorReduction: { value: 0.80, label: "Reduction in manual scheduling time",     source: "Quickflows Scheduler (80% manual scheduling time reduction)" },
+  retentionImprovement: { value: 0.30, label: "Improvement in caregiver retention",      source: "Quickflows Scheduler (30% caregiver retention improvement)" },
+  autoFillRate:         { value: 0.40, label: "Reduction in unfilled shifts",            source: "Quickflows Scheduler (40% unfilled shift reduction)" },
   // Reinforcing facts — DISPLAY ONLY. Never monetized, never in the total.
   scheduleAccuracy: { value: 0.96, label: "Shifts filled meeting skill and compliance requirements", source: "Quickflows Scheduler (96% schedule accuracy)",          displayOnly: true },
   callOffResponse:  { value: 5,    label: "Minutes from call-off to confirmed replacement",         source: "Quickflows Scheduler (<5 min call-off response)",      displayOnly: true },
@@ -255,6 +256,7 @@ export const SCHEDULER_AGENT = {
 // Scheduler source keys namespaced ("sched…") for consistency.
 const SCHEDULER_SOURCES: Record<string, { label: string; source: string }> = {
   schedOvertimeReduction:    SCHEDULER_AGENT.overtimeReduction,
+  schedAgencyReduction:      SCHEDULER_AGENT.agencyReduction,
   schedCoordinatorReduction: SCHEDULER_AGENT.coordinatorReduction,
   schedRetentionImprovement: SCHEDULER_AGENT.retentionImprovement,
   schedAutoFillRate:         SCHEDULER_AGENT.autoFillRate,
@@ -809,14 +811,14 @@ export const PRODUCTS: Product[] = [
       const A = SCHEDULER_AGENT;
       const agencyPremiumAnnual   = v.agencyHoursWeek * (v.agencyHourlyRate - v.avgHourlyRate) * 52;
       const overtimePremiumAnnual = v.overtimeHoursWeek * v.avgHourlyRate * (v.overtimeMultiplier - 1) * 52;
-      const agencySaved           = agencyPremiumAnnual   * A.overtimeReduction.value;
+      const agencySaved           = agencyPremiumAnnual   * A.agencyReduction.value;
       const overtimeSaved         = overtimePremiumAnnual * A.overtimeReduction.value;
       const schedulingLaborAnnual = v.schedulingHoursWeek * v.schedulerRate * v.numSchedulers * 52;
       const schedulingLaborSaved  = schedulingLaborAnnual * A.coordinatorReduction.value;
       const turnoverCostAnnual    = v.staffReplacementsYr * v.replacementCost;
       const turnoverSaved         = turnoverCostAnnual * A.retentionImprovement.value;
       return [
-        { category: "moneySaved", label: "Agency premium eliminated (annual)",  amount: agencySaved,         sourceKeys: ["schedOvertimeReduction"] },
+        { category: "moneySaved", label: "Agency premium eliminated (annual)",  amount: agencySaved,         sourceKeys: ["schedAgencyReduction"] },
         { category: "moneySaved", label: "Overtime premium eliminated (annual)", amount: overtimeSaved,       sourceKeys: ["schedOvertimeReduction"] },
         { category: "timeSaved",  label: "Scheduling labor saved (annual)",      amount: schedulingLaborSaved, sourceKeys: ["schedCoordinatorReduction"] },
         { category: "moneySaved", label: "Turnover cost avoided (annual)",       amount: turnoverSaved,       sourceKeys: ["schedRetentionImprovement"] },
@@ -828,7 +830,7 @@ export const PRODUCTS: Product[] = [
       const A = SCHEDULER_AGENT;
       const agencyPremiumAnnual   = v.agencyHoursWeek * (v.agencyHourlyRate - v.avgHourlyRate) * 52;
       const overtimePremiumAnnual = v.overtimeHoursWeek * v.avgHourlyRate * (v.overtimeMultiplier - 1) * 52;
-      const agencyQf    = agencyPremiumAnnual   * (1 - A.overtimeReduction.value);
+      const agencyQf    = agencyPremiumAnnual   * (1 - A.agencyReduction.value);
       const overtimeQf  = overtimePremiumAnnual * (1 - A.overtimeReduction.value);
       const schedulingLaborAnnual = v.schedulingHoursWeek * v.schedulerRate * v.numSchedulers * 52;
       const schedulingQf = schedulingLaborAnnual * (1 - A.coordinatorReduction.value);

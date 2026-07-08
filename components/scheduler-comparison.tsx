@@ -21,25 +21,26 @@ import { formatCurrency, formatPercent } from "@/lib/format";
 
 const A = SCHEDULER_AGENT;
 
-// Four driver facts that power the math (monetized).
+// Five driver facts that power the math (monetized).
 const DRIVER_FACTS = [
-  { value: `${Math.round(A.overtimeReduction.value * 100)}%`,    label: "lower overtime and agency spend" },
-  { value: `${Math.round(A.coordinatorReduction.value * 100)}%`, label: "less coordinator scheduling work" },
+  { value: `${Math.round(A.overtimeReduction.value * 100)}%`,    label: "reduction in overtime spend" },
+  { value: `${Math.round(A.agencyReduction.value * 100)}%`,      label: "reduction in agency hours" },
+  { value: `${Math.round(A.coordinatorReduction.value * 100)}%`, label: "less manual scheduling time" },
   { value: `${Math.round(A.retentionImprovement.value * 100)}%`, label: "improvement in caregiver retention" },
-  { value: `${Math.round(A.autoFillRate.value * 100)}%`,         label: "automatic fill rate for open shifts" },
+  { value: `${Math.round(A.autoFillRate.value * 100)}%`,         label: "reduction in unfilled shifts" },
 ];
 
 // Reinforcing facts — display only, never monetized.
 const REINFORCING_FACTS = [
   { value: `${Math.round(A.scheduleAccuracy.value * 100)}%`, label: "schedule accuracy" },
   { value: `<${A.callOffResponse.value} min`,                 label: "call-off response time" },
-  { value: `${A.advanceWarning.value}+ wks`,                  label: "advance capacity warning" },
   { value: "100%",                                             label: "audit trail coverage" },
 ];
 
 // Constants shown in "How this is calculated".
 const CALC_ROWS = [
   { display: formatPercent(A.overtimeReduction.value),    label: A.overtimeReduction.label,    source: A.overtimeReduction.source },
+  { display: formatPercent(A.agencyReduction.value),      label: A.agencyReduction.label,      source: A.agencyReduction.source },
   { display: formatPercent(A.coordinatorReduction.value), label: A.coordinatorReduction.label, source: A.coordinatorReduction.source },
   { display: formatPercent(A.retentionImprovement.value), label: A.retentionImprovement.label, source: A.retentionImprovement.source },
   { display: formatPercent(A.autoFillRate.value),         label: A.autoFillRate.label,         source: A.autoFillRate.source },
@@ -204,7 +205,7 @@ export function SchedulerComparison({ product }: { product: Product }) {
                   </p>
                   <p className="mt-0.5 text-[0.7rem] leading-snug text-muted-foreground">
                     {Math.round(A.autoFillRate.value * 100)}% of your currently unfilled shifts get
-                    assigned automatically. At your average revenue per shift, that is revenue
+                    filled with Quickflows. At your average revenue per shift, that is revenue
                     your operation is recovering.
                   </p>
                 </div>
@@ -229,26 +230,23 @@ export function SchedulerComparison({ product }: { product: Product }) {
           </h3>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-3">
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {DRIVER_FACTS.map((fact) => (
             <div
               key={fact.label}
-              className="rounded-xl border border-primary/20 bg-brand-soft px-4 py-4"
+              className="rounded-xl border border-primary/20 bg-brand-soft px-4 py-3"
             >
               <span
-                className="tabular text-2xl font-semibold tracking-tight text-primary"
+                className="tabular text-lg font-semibold tracking-tight text-primary"
                 style={{ fontFamily: "var(--font-mono)" }}
               >
                 {fact.value}
               </span>
-              <p className="mt-1 text-xs leading-snug text-muted-foreground">
+              <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
                 {fact.label}
               </p>
             </div>
           ))}
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {REINFORCING_FACTS.map((fact) => (
             <div
               key={fact.label}
@@ -278,10 +276,10 @@ export function SchedulerComparison({ product }: { product: Product }) {
             <p className="mb-3 mt-1 text-xs leading-relaxed text-muted-foreground">
               <strong className="font-medium text-foreground">Staffing costs:</strong> Agency
               premium is agency hours × (agency rate minus internal rate) × 52; Quickflows
-              reduces this by {Math.round(A.overtimeReduction.value * 100)}%. Overtime premium
+              reduces agency hours by {Math.round(A.agencyReduction.value * 100)}%. Overtime premium
               is overtime hours × base rate × (multiplier minus 1) × 52 — the premium above
               base only, not the full multiplier, to avoid overstating the cost; Quickflows
-              reduces this by {Math.round(A.overtimeReduction.value * 100)}% too.{" "}
+              reduces overtime by {Math.round(A.overtimeReduction.value * 100)}%.{" "}
               <strong className="font-medium text-foreground">Scheduling effort:</strong> Labor
               is scheduling hours × scheduler rate × number of schedulers × 52; the agent
               removes {Math.round(A.coordinatorReduction.value * 100)}% of it. Turnover is
@@ -289,7 +287,7 @@ export function SchedulerComparison({ product }: { product: Product }) {
               {Math.round(A.retentionImprovement.value * 100)}%.{" "}
               <strong className="font-medium text-foreground">Revenue from filled shifts</strong>{" "}
               (separate line): unfilled shifts per month × {Math.round(A.autoFillRate.value * 100)}%
-              fill rate × revenue per shift × 12 months. All constants are from
+              shift reduction × revenue per shift × 12 months. All constants are from
               Quickflows Scheduler.
             </p>
             <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">

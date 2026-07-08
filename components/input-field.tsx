@@ -127,8 +127,12 @@ function NumericInput({
   const isPercent = field.type === "percent";
   const isCurrency = field.type === "currency";
 
-  const toDisplay = (n: number) =>
-    isPercent ? String(round2(n * 100)) : formatNumber(n);
+  const toDisplay = (n: number) => {
+    if (isPercent) return String(round2(n * 100));
+    // Fields with fractional step (e.g. 0.25) need decimal display.
+    if (field.step !== undefined && field.step < 1) return String(round2(n));
+    return formatNumber(n);
+  };
 
   // When unfocused the input renders toDisplay(value) directly, so local text
   // only matters while editing — no effect syncing needed.
