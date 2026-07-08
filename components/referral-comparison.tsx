@@ -92,14 +92,14 @@ export function ReferralComparison({ product }: { product: Product }) {
             <DotMatrixTotal value={c.totalSaved} size="md" tone="violet" />
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            every month with Quickflows.
+            every year with Quickflows.
           </p>
 
           <div className="mt-7 overflow-hidden rounded-xl border border-border">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-secondary/50 text-left">
-                  <th className="px-4 py-3 font-medium text-muted-foreground">Per month</th>
+                  <th className="px-4 py-3 font-medium text-muted-foreground">Per year</th>
                   <th className="px-4 py-3 text-right font-medium text-muted-foreground">Doing it manually</th>
                   <th className="px-4 py-3 text-right font-medium text-muted-foreground">With Quickflows</th>
                   <th className="px-4 py-3 text-right font-medium text-primary">You save</th>
@@ -121,7 +121,7 @@ export function ReferralComparison({ product }: { product: Product }) {
                   </tr>
                 ))}
                 <tr className="bg-secondary/40">
-                  <td className="px-4 py-3 font-semibold text-foreground">Total per month</td>
+                  <td className="px-4 py-3 font-semibold text-foreground">Total per year</td>
                   <td className="px-4 py-3 text-right">
                     <AnimatedNumber value={c.totalManual}    variant="currency" className="font-semibold text-foreground" />
                   </td>

@@ -82,18 +82,12 @@ export function RoiProvider({ children }: { children: React.ReactNode }) {
     [segment],
   );
 
-  // Recompute the annual products visible for the current segment. The running
-  // total reflects exactly what the prospect can see and edit. Monthly products
-  // (e.g. AI Eligibility Verification) are presented standalone and are excluded
-  // here so their monthly figures never mix into the annual aggregate.
   const results = useMemo<ProductResult[]>(
     () =>
-      activeProducts
-        .filter((p) => (p.period ?? "annual") !== "monthly")
-        .map((p) => ({
-          productId: p.id,
-          lines: p.compute(values[p.id]),
-        })),
+      activeProducts.map((p) => ({
+        productId: p.id,
+        lines: p.compute(values[p.id]),
+      })),
     [activeProducts, values],
   );
 

@@ -405,7 +405,7 @@ export const PRODUCTS: Product[] = [
     blurb:
       "See what manual insurance verification costs you each month, and what the agent saves.",
     outputMode: "comparison", // render the manual-vs-automated table (Section 4)
-    period: "monthly", // this agent is monthly; others remain annual
+    period: "annual",
     // ONLY editable inputs = the client's manual reality.
     fields: [
       {
@@ -455,29 +455,29 @@ export const PRODUCTS: Product[] = [
         hint: "Your organization's average payment per visit.",
       },
     ],
-    // For the aggregate value-category system. Both lines are hard-dollar, monthly.
+    // For the aggregate value-category system. Both lines are hard-dollar, annual.
     compute: (v) => {
       const A = ELIGIBILITY_AGENT,
         I = ELIGIBILITY_INDUSTRY;
       const manualLaborCost =
-        ((v.appointmentsPerMonth * v.manualMinutes) / 60) * v.staffHourly;
+        ((v.appointmentsPerMonth * v.manualMinutes) / 60) * v.staffHourly * 12;
       const laborSaved = manualLaborCost * A.manualEffortRemoved.value;
 
       const eligDenials =
-        v.appointmentsPerMonth * I.initialDenialRate.value * I.eligibilityShare.value;
+        v.appointmentsPerMonth * I.initialDenialRate.value * I.eligibilityShare.value * 12;
       const revenueLost = eligDenials * I.neverRecovered.value * v.avgReimbursement;
       const revenueProtected = revenueLost * A.denialReduction.value;
 
       return [
         {
           category: "timeSaved",
-          label: "Verification labor saved (monthly)",
+          label: "Verification labor saved (annual)",
           amount: laborSaved,
           sourceKeys: ["manualEffortRemoved"],
         },
         {
           category: "moneyRecovered",
-          label: "Eligibility write-offs avoided (monthly)",
+          label: "Eligibility write-offs avoided (annual)",
           amount: revenueProtected,
           sourceKeys: [
             "initialDenialRate",
@@ -488,21 +488,21 @@ export const PRODUCTS: Product[] = [
         },
       ];
     },
-    // Powers the side-by-side comparison view. Same math, manual vs automated.
+    // Powers the side-by-side comparison view. Same math, manual vs automated, annualized.
     comparison: (v) => {
       const A = ELIGIBILITY_AGENT,
         I = ELIGIBILITY_INDUSTRY;
       const manualLabor =
-        ((v.appointmentsPerMonth * v.manualMinutes) / 60) * v.staffHourly;
+        ((v.appointmentsPerMonth * v.manualMinutes) / 60) * v.staffHourly * 12;
       const autoLabor = manualLabor * (1 - A.manualEffortRemoved.value);
 
       const eligDenials =
-        v.appointmentsPerMonth * I.initialDenialRate.value * I.eligibilityShare.value;
+        v.appointmentsPerMonth * I.initialDenialRate.value * I.eligibilityShare.value * 12;
       const revLostManual = eligDenials * I.neverRecovered.value * v.avgReimbursement;
       const revLostAuto = revLostManual * (1 - A.denialReduction.value);
 
       return {
-        period: "monthly",
+        period: "annual",
         rows: [
           {
             label: "Verification labor",
@@ -864,9 +864,9 @@ export const PRODUCTS: Product[] = [
     id: "referral",
     name: "Referral Management",
     segments: ["homeHealth", "provider"],
-    blurb: "See what manual referral coordination costs your team each month, and what the agent saves.",
+    blurb: "See what manual referral coordination costs your team each year, and what the agent saves.",
     outputMode: "comparison",
-    period: "monthly",
+    period: "annual",
 
     // ONLY editable inputs = the client's reality (no poster figures here).
     fields: [
@@ -877,19 +877,19 @@ export const PRODUCTS: Product[] = [
 
     compute: (v) => {
       const A = REFERRAL_AGENT;
-      const manualLabor = (v.referralsPerMonth * v.manualMinutes / 60) * v.coordinatorHourly;
+      const manualLabor = (v.referralsPerMonth * v.manualMinutes / 60) * v.coordinatorHourly * 12;
       const laborSaved  = manualLabor * A.coordinatorWorkReduction.value;
       return [
-        { category: "timeSaved", label: "Coordinator labor saved (monthly)", amount: laborSaved, sourceKeys: ["refCoordinatorWorkReduction"] },
+        { category: "timeSaved", label: "Coordinator labor saved (annual)", amount: laborSaved, sourceKeys: ["refCoordinatorWorkReduction"] },
       ];
     },
 
     comparison: (v) => {
       const A = REFERRAL_AGENT;
-      const manualLabor = (v.referralsPerMonth * v.manualMinutes / 60) * v.coordinatorHourly;
+      const manualLabor = (v.referralsPerMonth * v.manualMinutes / 60) * v.coordinatorHourly * 12;
       const autoLabor   = manualLabor * (1 - A.coordinatorWorkReduction.value);
       return {
-        period: "monthly",
+        period: "annual",
         rows: [
           { label: "Referral coordination labor", manual: manualLabor, automated: autoLabor, saved: manualLabor - autoLabor },
         ],
