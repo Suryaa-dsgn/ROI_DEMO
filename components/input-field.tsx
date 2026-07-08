@@ -32,8 +32,8 @@ function AssumptionTag() {
         Assumption
       </TooltipTrigger>
       <TooltipContent className="max-w-xs border-border bg-popover text-xs leading-snug text-popover-foreground">
-        Our estimate, held below our marketing claim. To be confirmed with your
-        real before/after results.
+        Our estimate, based on Quickflows performance data. To be confirmed with
+        your real before/after results.
       </TooltipContent>
     </Tooltip>
   );

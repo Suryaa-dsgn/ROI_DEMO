@@ -289,8 +289,8 @@ export function SchedulerComparison({ product }: { product: Product }) {
               {Math.round(A.retentionImprovement.value * 100)}%.{" "}
               <strong className="font-medium text-foreground">Revenue from filled shifts</strong>{" "}
               (separate line): unfilled shifts per month × {Math.round(A.autoFillRate.value * 100)}%
-              fill rate × revenue per shift × 12 months. All constants are from the
-              Quickflows Scheduler poster.
+              fill rate × revenue per shift × 12 months. All constants are from
+              Quickflows Scheduler.
             </p>
             <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
               {CALC_ROWS.map((row) => (

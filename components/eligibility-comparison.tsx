@@ -80,8 +80,8 @@ export function EligibilityComparison({ product }: { product: Product }) {
           </h3>
           <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-muted-foreground">
             Your team verifies coverage, network status, benefits, and
-            authorizations by hand for every visit. Here is what that costs, and
-            what the agent saves.
+            authorizations by hand for every visit. Here is what that costs
+            today, and what Quickflows saves.
           </p>
           <div className="mt-7 grid grid-cols-1 gap-6">
             {core.map((f) => (

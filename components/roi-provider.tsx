@@ -27,7 +27,7 @@ interface RoiContextValue {
   view: View;
   setView: (v: View) => void;
 
-  segment: Segment | null;
+  segment: Segment;
   chooseSegment: (s: Segment) => void;
   resetSegment: () => void;
 
@@ -51,8 +51,11 @@ const RoiContext = createContext<RoiContextValue | null>(null);
 
 export function RoiProvider({ children }: { children: React.ReactNode }) {
   const [view, setView] = useState<View>("landing");
-  const [segment, setSegment] = useState<Segment | null>(null);
-  const [activeProductId, setActiveProductId] = useState<string | null>(null);
+  const segment: Segment = "provider";
+  const [activeProductId, setActiveProductId] = useState<string | null>(() => {
+    const first = productsForSegment("provider")[0];
+    return first ? first.id : null;
+  });
   const [values, setValues] = useState(defaultValues);
 
   const setValue = useCallback(
@@ -65,20 +68,17 @@ export function RoiProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  // Picking an org type also focuses that segment's first product.
-  const chooseSegment = useCallback((s: Segment) => {
-    setSegment(s);
-    const first = productsForSegment(s)[0];
-    setActiveProductId(first ? first.id : null);
-  }, []);
+  // No-op: segment is hardcoded to "provider".
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const chooseSegment = useCallback((_s: Segment) => {}, []);
 
+  // Go back to landing when the user exits the calculator.
   const resetSegment = useCallback(() => {
-    setSegment(null);
-    setActiveProductId(null);
-  }, []);
+    setView("landing");
+  }, [setView]);
 
   const activeProducts = useMemo(
-    () => (segment ? productsForSegment(segment) : []),
+    () => productsForSegment(segment),
     [segment],
   );
 

@@ -30,9 +30,7 @@ export function AssumptionsPanel({ product }: { product: Product }) {
         </AccordionTrigger>
         <AccordionContent className="rounded-b-xl border border-t-0 border-border bg-card px-4 pb-5 pt-1">
           <p className="mb-4 mt-1 text-xs leading-relaxed text-muted-foreground">
-            Benchmark overrides and improvement rates. Rates marked{" "}
-            <span className="text-primary">Assumption</span> are our estimate,
-            held below our marketing claim.
+            Adjust the inputs below to match your organization&apos;s situation.
           </p>
           <div className="grid grid-cols-1 gap-5">
             {advanced.map((f) => (

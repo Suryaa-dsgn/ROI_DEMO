@@ -64,9 +64,9 @@ export function ViewMethod() {
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             The controls marked{" "}
             <span className="text-primary">Assumption</span> are the one input we
-            cannot source externally. They are held below our marketing claims
-            and are meant to be confirmed against your real before/after results
-            — not taken on faith.
+            cannot source externally. They are based on Quickflows performance
+            data and are meant to be confirmed against your real before/after
+            results — not taken on faith.
           </p>
         </section>
 
@@ -101,8 +101,8 @@ export function ViewMethod() {
 
       <div className="mt-12 rounded-2xl border border-border bg-secondary/50 p-6">
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Conservative estimates from published benchmarks and illustrative
-          improvement rates. Actual results vary.
+          Estimates are based on published industry benchmarks and Quickflows
+          performance data. Actual results vary.
         </p>
         <Button
           asChild

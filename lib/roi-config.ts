@@ -450,7 +450,7 @@ export const PRODUCTS: Product[] = [
         min: 20,
         step: 10,
         unit: "$",
-        hint: "Your own average; used for the money-lost line",
+        hint: "Your organization's average payment per visit.",
       },
     ],
     // For the aggregate value-category system. Both lines are hard-dollar, monthly.

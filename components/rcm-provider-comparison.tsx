@@ -89,7 +89,7 @@ export function RcmProviderComparison({ product }: { product: Product }) {
           </h3>
           <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-muted-foreground">
             Denials are one of the biggest preventable losses in your revenue
-            cycle. Here is what they cost you today, and what the agent prevents
+            cycle. Here is what denials cost today, and what Quickflows prevents
             and recovers.
           </p>
           <div className="mt-7 grid grid-cols-1 gap-6">

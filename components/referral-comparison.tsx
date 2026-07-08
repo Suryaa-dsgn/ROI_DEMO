@@ -211,13 +211,13 @@ export function ReferralComparison({ product }: { product: Product }) {
               Manual labor is referrals per month × minutes per referral ÷ 60 ×
               coordinator hourly cost. The agent removes{" "}
               {Math.round(A.coordinatorWorkReduction.value * 100)}% of manual
-              referral coordination time (the poster&apos;s figure). The{" "}
+              referral coordination time (from Quickflows). The{" "}
               {Math.round(A.leakageReduction.value * 100)}% leakage reduction is
               a real outcome shown as a capability fact — it has no dollar figure
               because the value of a kept referral varies by contract. The
-              minutes per referral and coordinator cost are your team&apos;s own
-              numbers, not poster claims. No external benchmarks are used for
-              this agent.
+              minutes per referral and coordinator cost are your organization&apos;s
+              own numbers, not Quickflows performance data. No external benchmarks
+              are used for this agent.
             </p>
             <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
               {CALC_ROWS.map((row) => (
