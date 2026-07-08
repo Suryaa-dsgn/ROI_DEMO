@@ -410,10 +410,10 @@ export const PRODUCTS: Product[] = [
     fields: [
       {
         key: "appointmentsPerMonth",
-        label: "Scheduled appointments per month",
+        label: "Eligibility checks done per month",
         type: "number",
         tier: "core",
-        default: 10000,
+        default: 5000,
         min: 50,
         step: 50,
         unit: "visits/mo",
@@ -448,7 +448,7 @@ export const PRODUCTS: Product[] = [
         label: "Your average payment per visit",
         type: "currency",
         tier: "core",
-        default: 2000,
+        default: 500,
         min: 20,
         step: 10,
         unit: "$",
