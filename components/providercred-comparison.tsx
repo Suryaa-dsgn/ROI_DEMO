@@ -263,7 +263,7 @@ export function ProviderCredComparison({ product }: { product: Product }) {
               <strong className="font-medium text-foreground">New credentialing:</strong> providers per year × minutes ÷ 60 × hourly rate = manual cost; Quickflows eliminates{" "}
               {Math.round(A.credentialingTimeReduction.value * 100)}% of it.{" "}
               <strong className="font-medium text-foreground">Recredentialing:</strong> same formula with the recredentialing volume and time; Quickflows eliminates{" "}
-              {Math.round(A.recredentialingTimeReduction.value * 100)}% of it. Both use your organization&apos;s real numbers — no external benchmarks. The compliance exposure ($2M+) is the Quickflows figure, shown separately and never added to the labor total.
+              {Math.round(A.recredentialingTimeReduction.value * 100)}% of it. Both use your organization&apos;s real numbers - no external benchmarks. The compliance exposure ($2M+) is the Quickflows figure, shown separately and never added to the labor total.
             </p>
             <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
               {CALC_ROWS.map((row) => (

@@ -43,7 +43,7 @@ export function SourceTooltip({
           {resolved.map(({ key, source }) => (
             <li key={key} className="text-xs leading-snug">
               <span className="text-foreground">{source.label}</span>
-              <span className="text-muted-foreground"> — {source.source}</span>
+              <span className="text-muted-foreground"> - {source.source}</span>
             </li>
           ))}
         </ul>

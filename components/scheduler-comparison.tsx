@@ -277,7 +277,7 @@ export function SchedulerComparison({ product }: { product: Product }) {
               <strong className="font-medium text-foreground">Staffing costs:</strong> Agency
               premium is agency hours × (agency rate minus internal rate) × 52; Quickflows
               reduces agency hours by {Math.round(A.agencyReduction.value * 100)}%. Overtime premium
-              is overtime hours × base rate × (multiplier minus 1) × 52 — the premium above
+              is overtime hours × base rate × (multiplier minus 1) × 52 - the premium above
               base only, not the full multiplier, to avoid overstating the cost; Quickflows
               reduces overtime by {Math.round(A.overtimeReduction.value * 100)}%.{" "}
               <strong className="font-medium text-foreground">Scheduling effort:</strong> Labor

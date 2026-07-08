@@ -64,7 +64,7 @@ export function ReferralComparison({ product }: { product: Product }) {
             Your process today
           </h3>
           <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-muted-foreground">
-            Your coordinators spend significant time on every referral —
+            Your coordinators spend significant time on every referral -
             capturing, validating, matching, chasing authorizations, and closing
             the loop. Here is what that costs today, and how much of it the
             agent handles.
@@ -213,7 +213,7 @@ export function ReferralComparison({ product }: { product: Product }) {
               {Math.round(A.coordinatorWorkReduction.value * 100)}% of manual
               referral coordination time (from Quickflows). The{" "}
               {Math.round(A.leakageReduction.value * 100)}% leakage reduction is
-              a real outcome shown as a capability fact — it has no dollar figure
+              a real outcome shown as a capability fact - it has no dollar figure
               because the value of a kept referral varies by contract. The
               minutes per referral and coordinator cost are your organization&apos;s
               own numbers, not Quickflows performance data. No external benchmarks

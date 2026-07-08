@@ -35,7 +35,7 @@ export function RunningTotal() {
             variant="compactCurrency"
             className="text-foreground"
           />{" "}
-          risk avoided — kept separate, never added in.
+          risk avoided - kept separate, never added in.
         </p>
       ) : null}
     </div>

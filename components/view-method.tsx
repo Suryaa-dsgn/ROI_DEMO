@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 const VALUE_TYPES: { name: string; detail: string; separate?: boolean }[] = [
   {
     name: "Money saved",
-    detail: "Spend that stops leaving — agency, overtime, turnover.",
+    detail: "Spend that stops leaving - agency, overtime, turnover.",
   },
   {
     name: "Time saved",
@@ -18,7 +18,7 @@ const VALUE_TYPES: { name: string; detail: string; separate?: boolean }[] = [
   {
     name: "Cash freed up",
     detail:
-      "Money that arrives sooner. Real, but timing — not new money — so we never add it to the total.",
+      "Money that arrives sooner. Real, but timing - not new money - so we never add it to the total.",
     separate: true,
   },
   {
@@ -50,8 +50,8 @@ export function ViewMethod() {
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             It is easy to quote a big number by claiming a slice of your whole
-            revenue. We do not. We count only specific, defensible effects —
-            claims recovered, hours returned, spend cut — each tied to a
+            revenue. We do not. We count only specific, defensible effects -
+            claims recovered, hours returned, spend cut - each tied to a
             benchmark you can look up. That keeps the number smaller and honest,
             which is the point.
           </p>
@@ -66,7 +66,7 @@ export function ViewMethod() {
             <span className="text-primary">Assumption</span> are the one input we
             cannot source externally. They are based on Quickflows performance
             data and are meant to be confirmed against your real before/after
-            results — not taken on faith.
+            results - not taken on faith.
           </p>
         </section>
 

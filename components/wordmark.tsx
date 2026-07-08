@@ -10,7 +10,7 @@ export function Wordmark({ className }: { className?: string }) {
     <button
       onClick={() => setView("landing")}
       className={`inline-flex items-center gap-2.5 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${className ?? ""}`}
-      aria-label="Quickflows — back to start"
+      aria-label="Quickflows - back to start"
     >
       <Image
         src="/logo-purple.svg"

@@ -526,7 +526,7 @@ export const PRODUCTS: Product[] = [
 
   {
     id: "rcm-provider",
-    name: "RCM — Provider",
+    name: "RCM - Provider",
     segments: ["provider"],
     blurb:
       "See what claim denials cost you each year, and what the agent prevents and recovers.",
@@ -629,7 +629,7 @@ export const PRODUCTS: Product[] = [
 
   {
     id: "rcm-payer",
-    name: "RCM — Payer",
+    name: "RCM - Payer",
     segments: ["payer"],
     blurb:
       "Auto-decides routine claims and catches improper payments, so staff handle only exceptions.",

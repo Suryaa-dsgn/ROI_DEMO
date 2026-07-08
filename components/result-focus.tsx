@@ -19,7 +19,7 @@ export function ResultFocus({ product }: { product: Product }) {
   return (
     <div className="rounded-2xl border border-border bg-secondary/60 p-6">
       <p className="text-xs uppercase tracking-wide text-muted-foreground">
-        {product.name} — annual hard dollars
+        {product.name} - annual hard dollars
       </p>
       <div className="mt-2">
         <AnimatedNumber
